@@ -1,0 +1,47 @@
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #e8e8e8;
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #a0a0a0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.home-main {
+  padding: 2rem 1.5rem;
+}
+
+.welcome {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #c0c0c0;
+}
+
+.welcome strong {
+  color: #fff;
+}
