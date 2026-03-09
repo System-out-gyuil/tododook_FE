@@ -68,46 +68,80 @@
     gap: 4px;
   }
   
-  .calendar-weekday {
-    text-align: center;
-    font-size: 0.75rem;
-    color: #888;
-    padding: 0.25rem 0;
-  }
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #888;
+  padding: 0.25rem 0;
+}
+
+.calendar-weekday.sunday {
+  color: #ff6b6b;
+}
+
+.calendar-weekday.saturday {
+  color: #4a9eff;
+}
   
-  .calendar-day {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    color: #c0c0c0;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
-    cursor: pointer;
-    min-height: 32px;
-  }
-  
-  .calendar-day.empty {
-    background: transparent;
-    border-color: transparent;
-    cursor: default;
-  }
-  
-  .calendar-day:hover:not(.empty) {
-    background: rgba(255, 255, 255, 0.1);
-  }
-  
-  .calendar-day.selected {
-    background: rgba(74, 158, 255, 0.35);
-    border-color: #4a9eff;
-    color: #fff;
-  }
-  
-  .calendar-day.today {
-    border-color: rgba(74, 158, 255, 0.6);
-  }
+.calendar-day-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.calendar-day-cell.empty {
+  pointer-events: none;
+}
+
+.calendar-day-btn {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 28px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.calendar-day-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.calendar-day-cell.selected .calendar-day-btn {
+  border-color: #4a9eff;
+  color: #fff;
+}
+
+.calendar-day-cell.today .calendar-day-btn {
+  border-color: rgba(74, 158, 255, 0.6);
+}
+
+.calendar-day-num {
+  font-size: 0.68rem;
+  color: #888;
+  line-height: 1;
+}
+
+.calendar-day-cell.sunday .calendar-day-num {
+  color: #ff6b6b;
+}
+
+.calendar-day-cell.saturday .calendar-day-num {
+  color: #4a9eff;
+}
+
+.calendar-day-cell.selected .calendar-day-num {
+  color: #fff;
+  font-weight: 600;
+}
   
   .todo-categories {
     background: rgba(255, 255, 255, 0.05);
@@ -227,7 +261,6 @@
   }
   
   .todo-label span.done {
-    text-decoration: line-through;
     color: #888;
   }
   

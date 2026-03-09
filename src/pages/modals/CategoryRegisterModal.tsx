@@ -12,8 +12,11 @@ const COLOR_OPTIONS = ['white', '#4a9eff', '#6bcf7f', '#f0b84d', '#e85d75', '#a7
 export default function CategoryRegisterModal({ onClose, onSuccess }: CategoryRegisterModalProps) {
   const [name, setName] = useState('');
   const [color, setColor] = useState('white');
+  const [customColor, setCustomColor] = useState('#ff5252');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const isCustomActive = !COLOR_OPTIONS.includes(color);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +72,21 @@ export default function CategoryRegisterModal({ onClose, onSuccess }: CategoryRe
                     onClick={() => setColor(c)}
                   />
                 ))}
+                <label
+                  className={`color-swatch color-swatch-custom ${isCustomActive ? 'active' : ''}`}
+                  style={{ background: customColor }}
+                  title="직접 선택"
+                >
+                  {!isCustomActive && <span className="color-swatch-custom-icon">✎</span>}
+                  <input
+                    type="color"
+                    value={customColor}
+                    onChange={(e) => {
+                      setCustomColor(e.target.value);
+                      setColor(e.target.value);
+                    }}
+                  />
+                </label>
               </div>
             </label>
             <div className="modal-actions">

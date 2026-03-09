@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Holidays from 'date-holidays';
 import {
   getCategories,
   getTodosByCategory,
@@ -18,6 +19,66 @@ function getFirstDayOfMonth(year: number, month: number): number {
   return new Date(year, month - 1, 1).getDay();
 }
 
+function makeGradient(colors: string[]): string {
+  if (colors.length === 1) return colors[0];
+  const step = 100 / colors.length;
+  const stops = colors.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`).join(', ');
+  return `linear-gradient(135deg, ${stops})`;
+}
+
+function toDateStr(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function buildKoreanHolidaySet(year: number): Set<string> {
+  const hd = new Holidays('KR');
+  const list = hd.getHolidays(year).filter((h) => h.type === 'public');
+
+  const base = new Set<string>();
+  for (const h of list) {
+    const dateStr = typeof h.date === 'string' ? h.date.slice(0, 10) : '';
+    if (!dateStr) continue;
+    base.add(dateStr);
+
+    // 설날·추석은 전날과 다음날도 연휴
+    if (h.name.includes('설날') || h.name.includes('추석')) {
+      const d = new Date(dateStr + 'T00:00:00');
+      const prev = new Date(d);
+      prev.setDate(prev.getDate() - 1);
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      base.add(toDateStr(prev));
+      base.add(toDateStr(next));
+    }
+  }
+
+  // 대체공휴일 계산: 공휴일이 토/일이면 다음 평일로 이동
+  const result = new Set(base);
+  const sorted = [...base].sort();
+
+  for (const dateStr of sorted) {
+    const date = new Date(dateStr + 'T00:00:00');
+    const dow = date.getDay();
+    if (dow === 0 || dow === 6) {
+      const candidate = new Date(date);
+      candidate.setDate(candidate.getDate() + 1);
+      while (
+        candidate.getDay() === 0 ||
+        candidate.getDay() === 6 ||
+        result.has(toDateStr(candidate))
+      ) {
+        candidate.setDate(candidate.getDate() + 1);
+      }
+      result.add(toDateStr(candidate));
+    }
+  }
+
+  return result;
+}
+
 interface TodoTabProps {
   refreshKey?: number;
 }
@@ -29,6 +90,8 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
   const [selectedDate, setSelectedDate] = useState<string>(
     `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   );
+
+  const [holidayDates, setHolidayDates] = useState<Set<string>>(new Set());
 
   const [categories, setCategories] = useState<TodoCategoryDto[]>([]);
   const [categoryTodos, setCategoryTodos] = useState<Record<number, TodoDto[]>>({});
@@ -59,6 +122,14 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
   useEffect(() => {
     loadCategories();
   }, [loadCategories, refreshKey]);
+
+  useEffect(() => {
+    try {
+      setHolidayDates(buildKoreanHolidaySet(viewYear));
+    } catch {
+      setHolidayDates(new Set());
+    }
+  }, [viewYear]);
 
   const handlePrevMonth = () => {
     if (viewMonth === 1) {
@@ -228,14 +299,17 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
             </button>
           </div>
           <div className="calendar-grid">
-            {['일', '월', '화', '수', '목', '금', '토'].map((d) => (
-              <div key={d} className="calendar-weekday">
+            {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
+              <div
+                key={d}
+                className={`calendar-weekday${i === 0 ? ' sunday' : i === 6 ? ' saturday' : ''}`}
+              >
                 {d}
               </div>
             ))}
             {cells.map((day, idx) => {
               if (day === null) {
-                return <div key={`empty-${idx}`} className="calendar-day empty" />;
+                return <div key={`empty-${idx}`} className="calendar-day-cell empty" />;
               }
               const dateStr = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
               const isSelected = dateStr === selectedDate;
@@ -243,15 +317,48 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                 viewYear === today.getFullYear() &&
                 viewMonth === today.getMonth() + 1 &&
                 day === today.getDate();
+
+              const dayOfWeek = new Date(viewYear, viewMonth - 1, day).getDay();
+              const isSaturday = dayOfWeek === 6;
+              const isRedDay = dayOfWeek === 0 || holidayDates.has(dateStr);
+
+              const todosOnDate = categories.flatMap((cat) =>
+                (categoryTodos[cat.id] ?? [])
+                  .filter((t) => t.date === dateStr)
+                  .map((t) => ({
+                    ...t,
+                    categoryColor: cat.color === 'white' ? '#4a9eff' : cat.color,
+                  }))
+              );
+              const totalCount = todosOnDate.length;
+              const doneCount = todosOnDate.filter((t) => t.done).length;
+              const allDone = totalCount > 0 && doneCount === totalCount;
+              const completedColors = [
+                ...new Set(todosOnDate.filter((t) => t.done).map((t) => t.categoryColor)),
+              ];
+
+              const btnBackground =
+                completedColors.length > 0
+                  ? makeGradient(completedColors)
+                  : isSelected
+                  ? 'rgba(74, 158, 255, 0.35)'
+                  : undefined;
+
               return (
-                <button
+                <div
                   key={dateStr}
-                  type="button"
-                  className={`calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
-                  onClick={() => setSelectedDate(dateStr)}
+                  className={`calendar-day-cell${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}${isSaturday ? ' saturday' : ''}${isRedDay ? ' sunday' : ''}`}
                 >
-                  {day}
-                </button>
+                  <button
+                    type="button"
+                    className="calendar-day-btn"
+                    style={btnBackground ? { background: btnBackground } : undefined}
+                    onClick={() => setSelectedDate(dateStr)}
+                  >
+                    {allDone ? '✓' : totalCount > 0 ? totalCount : ''}
+                  </button>
+                  <span className="calendar-day-num">{day}</span>
+                </div>
               );
             })}
           </div>
