@@ -176,6 +176,45 @@ export async function moveTodoDate(id: number, date: string): Promise<TodoDto> {
   return data;
 }
 
+export async function updateTodoName(id: number, name: string): Promise<TodoDto> {
+  const res = await fetch(`${API_BASE}/todos/${id}/name`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ name }),
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) throw new Error((data?.message as string) ?? '할일 수정 실패');
+  return data;
+}
+
+export async function deleteTodo(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/todos/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data?.message as string) ?? '할일 삭제 실패');
+  }
+}
+
+export async function moveTodoCategory(id: number, categoryId: number): Promise<TodoDto> {
+  const res = await fetch(`${API_BASE}/todos/${id}/category`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ categoryId }),
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) throw new Error((data?.message as string) ?? '카테고리 변경 실패');
+  return data;
+}
+
 export async function toggleTodoDone(id: number): Promise<TodoDto> {
   const res = await fetch(`${API_BASE}/todos/${id}/done`, {
     method: 'PATCH',

@@ -9,6 +9,9 @@ import {
   reorderCategories,
   reorderTodos,
   moveTodoDate,
+  moveTodoCategory,
+  updateTodoName,
+  deleteTodo,
   type TodoCategoryDto,
   type TodoDto,
   type RoutineDto,
@@ -137,17 +140,27 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
   const [addingCatId, setAddingCatId] = useState<number | null>(null);
   const [newTodoName, setNewTodoName] = useState('');
 
+  // 투두 팝업 상태
+  const [todoPopup, setTodoPopup] = useState<TodoDto | null>(null);
+  const [popupMode, setPopupMode] = useState<'menu' | 'edit' | 'date'>('menu');
+  const [popupEditName, setPopupEditName] = useState('');
+  const [popupNewDate, setPopupNewDate] = useState('');
+
   // 투두 드래그 상태
   const [draggingTodo, setDraggingTodo] = useState<{ id: number; categoryId: number } | null>(null);
   const [dragOverTodoId, setDragOverTodoId] = useState<number | null>(null);
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<number | null>(null);
   const [calendarDropTarget, setCalendarDropTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  // FLIP 애니메이션용 refs
+  // 카테고리 FLIP 애니메이션용 refs
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const savedPositions = useRef<Map<number, number>>(new Map());
+  // 투두 FLIP 애니메이션용 refs
+  const todoItemRefs = useRef<Map<number, HTMLLIElement>>(new Map());
+  const todoSavedPositions = useRef<Map<number, number>>(new Map());
 
   const loadCategories = useCallback(async () => {
     try {
@@ -224,40 +237,79 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     e.stopPropagation();
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', String(todo.id));
+    saveTodoPositions();
     setDraggingTodo({ id: todo.id, categoryId: todo.categoryId });
     setDragOverTodoId(null);
   };
 
   const handleTodoDragEnd = () => {
+    clearTodoTransforms();
     setDraggingTodo(null);
     setDragOverTodoId(null);
+    setDragOverCategoryId(null);
     setCalendarDropTarget(null);
   };
 
-  const handleTodoDragEnter = (e: React.DragEvent, targetTodoId: number) => {
+  const handleTodoDragEnter = (e: React.DragEvent, targetTodo: TodoDto) => {
     e.preventDefault();
-    if (draggingTodo && draggingTodo.id !== targetTodoId) {
-      setDragOverTodoId(targetTodoId);
+    if (
+      draggingTodo &&
+      draggingTodo.id !== targetTodo.id &&
+      draggingTodo.categoryId === targetTodo.categoryId
+    ) {
+      saveTodoPositions();
+      setDragOverTodoId(targetTodo.id);
     }
   };
 
-  const handleTodoDrop = async (e: React.DragEvent, targetTodo: TodoDto) => {
+  // targetCategoryId: 투두가 속한 카테고리 id (todo item onDrop에서 전달)
+  const handleTodoDrop = async (e: React.DragEvent, targetCategoryId: number) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!draggingTodo || draggingTodo.id === targetTodo.id) return;
-    if (draggingTodo.categoryId !== targetTodo.categoryId) return;
+    if (!draggingTodo) return;
+
+    // 다른 카테고리로 이동
+    if (draggingTodo.categoryId !== targetCategoryId) {
+      const { id: todoId, categoryId: sourceCatId } = draggingTodo;
+      const todo = (categoryTodos[sourceCatId] ?? []).find((t) => t.id === todoId);
+      if (!todo) return;
+
+      clearTodoTransforms();
+      setDraggingTodo(null);
+      setDragOverTodoId(null);
+      setDragOverCategoryId(null);
+
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [sourceCatId]: (prev[sourceCatId] ?? []).filter((t) => t.id !== todoId),
+        [targetCategoryId]: [...(prev[targetCategoryId] ?? []), { ...todo, categoryId: targetCategoryId }],
+      }));
+
+      try {
+        await moveTodoCategory(todoId, targetCategoryId);
+      } catch {
+        setCategoryTodos((prev) => ({
+          ...prev,
+          [sourceCatId]: [...(prev[sourceCatId] ?? []), todo],
+          [targetCategoryId]: (prev[targetCategoryId] ?? []).filter((t) => t.id !== todoId),
+        }));
+      }
+      return;
+    }
+
+    // 같은 카테고리 내 순서 변경 (상태값 기반)
+    if (dragOverTodoId === null || draggingTodo.id === dragOverTodoId) return;
 
     const catId = draggingTodo.categoryId;
     const todosOnDate = (categoryTodos[catId] ?? []).filter((t) => t.date === selectedDate);
     const fromIdx = todosOnDate.findIndex((t) => t.id === draggingTodo.id);
-    const toIdx = todosOnDate.findIndex((t) => t.id === targetTodo.id);
+    const toIdx = todosOnDate.findIndex((t) => t.id === dragOverTodoId);
     if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
 
     const reordered = [...todosOnDate];
     const [removed] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, removed);
 
-    // 낙관적 업데이트
     setCategoryTodos((prev) => ({
       ...prev,
       [catId]: [
@@ -266,19 +318,51 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
       ],
     }));
 
+    clearTodoTransforms();
     setDraggingTodo(null);
     setDragOverTodoId(null);
 
     try {
       await reorderTodos({ todoIds: reordered.map((t) => t.id) });
     } catch {
-      // 롤백
       setCategoryTodos((prev) => ({
         ...prev,
         [catId]: [
           ...(prev[catId] ?? []).filter((t) => t.date !== selectedDate),
           ...todosOnDate,
         ],
+      }));
+    }
+  };
+
+  // 카테고리 빈 영역에 드롭할 때 (투두 아이템 위가 아닌 경우)
+  const handleCategoryTodoDrop = async (e: React.DragEvent, targetCatId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggingTodo || draggingTodo.categoryId === targetCatId) return;
+
+    const { id: todoId, categoryId: sourceCatId } = draggingTodo;
+    const todo = (categoryTodos[sourceCatId] ?? []).find((t) => t.id === todoId);
+    if (!todo) return;
+
+    clearTodoTransforms();
+    setDraggingTodo(null);
+    setDragOverTodoId(null);
+    setDragOverCategoryId(null);
+
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [sourceCatId]: (prev[sourceCatId] ?? []).filter((t) => t.id !== todoId),
+      [targetCatId]: [...(prev[targetCatId] ?? []), { ...todo, categoryId: targetCatId }],
+    }));
+
+    try {
+      await moveTodoCategory(todoId, targetCatId);
+    } catch {
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [sourceCatId]: [...(prev[sourceCatId] ?? []), todo],
+        [targetCatId]: (prev[targetCatId] ?? []).filter((t) => t.id !== todoId),
       }));
     }
   };
@@ -345,6 +429,111 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     }
   };
 
+  // 투두 팝업 핸들러
+  const handleOpenTodoPopup = (todo: TodoDto) => {
+    setTodoPopup(todo);
+    setPopupMode('menu');
+    setPopupEditName(todo.name);
+    setPopupNewDate(todo.date);
+  };
+
+  const handleCloseTodoPopup = () => {
+    setTodoPopup(null);
+    setPopupMode('menu');
+  };
+
+  const handleDeleteTodo = async () => {
+    if (!todoPopup) return;
+    const { id, categoryId } = todoPopup;
+    const backup = todoPopup;
+    setTodoPopup(null);
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [categoryId]: (prev[categoryId] ?? []).filter((t) => t.id !== id),
+    }));
+    try {
+      await deleteTodo(id);
+    } catch (e) {
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [categoryId]: [...(prev[categoryId] ?? []), backup],
+      }));
+      setError(e instanceof Error ? e.message : '삭제 실패');
+    }
+  };
+
+  const handleSaveEditName = async () => {
+    if (!todoPopup || !popupEditName.trim()) return;
+    const trimmed = popupEditName.trim();
+    const backup = todoPopup;
+    setTodoPopup(null);
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [todoPopup.categoryId]: (prev[todoPopup.categoryId] ?? []).map((t) =>
+        t.id === todoPopup.id ? { ...t, name: trimmed } : t
+      ),
+    }));
+    try {
+      await updateTodoName(todoPopup.id, trimmed);
+    } catch (e) {
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [backup.categoryId]: (prev[backup.categoryId] ?? []).map((t) =>
+          t.id === backup.id ? backup : t
+        ),
+      }));
+      setError(e instanceof Error ? e.message : '수정 실패');
+    }
+  };
+
+  const handleDoToday = async () => {
+    if (!todoPopup) return;
+    const today = toDateStr(new Date());
+    const backup = todoPopup;
+    setTodoPopup(null);
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [todoPopup.categoryId]: (prev[todoPopup.categoryId] ?? []).map((t) =>
+        t.id === todoPopup.id ? { ...t, date: today } : t
+      ),
+    }));
+    try {
+      await moveTodoDate(todoPopup.id, today);
+    } catch (e) {
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [backup.categoryId]: (prev[backup.categoryId] ?? []).map((t) =>
+          t.id === backup.id ? backup : t
+        ),
+      }));
+      setError(e instanceof Error ? e.message : '날짜 변경 실패');
+    }
+  };
+
+  const handleSaveDateChange = async () => {
+    if (!todoPopup || !popupNewDate) return;
+    if (popupNewDate === todoPopup.date) { setTodoPopup(null); return; }
+    const backup = todoPopup;
+    setTodoPopup(null);
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [todoPopup.categoryId]: (prev[todoPopup.categoryId] ?? []).map((t) =>
+        t.id === todoPopup.id ? { ...t, date: popupNewDate } : t
+      ),
+    }));
+    try {
+      await moveTodoDate(todoPopup.id, popupNewDate);
+    } catch (e) {
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [backup.categoryId]: (prev[backup.categoryId] ?? []).map((t) =>
+          t.id === backup.id ? backup : t
+        ),
+      }));
+      setError(e instanceof Error ? e.message : '날짜 변경 실패');
+    }
+  };
+
   // dragOverIndex 바뀔 때마다 FLIP 애니메이션 실행
   useEffect(() => {
     if (draggingIndex === null) return;
@@ -376,6 +565,40 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     savedPositions.current.clear();
     itemRefs.current.forEach((el, id) => {
       savedPositions.current.set(id, el.getBoundingClientRect().top);
+    });
+  };
+
+  // 투두 FLIP 애니메이션
+  useEffect(() => {
+    if (!draggingTodo) return;
+    todoItemRefs.current.forEach((el, id) => {
+      const prevY = todoSavedPositions.current.get(id);
+      if (prevY === undefined) return;
+      const currY = el.getBoundingClientRect().top;
+      const diff = prevY - currY;
+      if (Math.abs(diff) < 1) return;
+      el.style.transition = 'none';
+      el.style.transform = `translateY(${diff}px)`;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.transition = 'transform 0.2s ease';
+          el.style.transform = 'translateY(0)';
+        });
+      });
+    });
+  }, [dragOverTodoId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const clearTodoTransforms = () => {
+    todoItemRefs.current.forEach((el) => {
+      el.style.transition = '';
+      el.style.transform = '';
+    });
+  };
+
+  const saveTodoPositions = () => {
+    todoSavedPositions.current.clear();
+    todoItemRefs.current.forEach((el, id) => {
+      todoSavedPositions.current.set(id, el.getBoundingClientRect().top);
     });
   };
 
@@ -440,6 +663,24 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     reordered.splice(dragOverIndex, 0, removed);
     return reordered;
   })();
+
+  const getPreviewTodos = (catId: number): TodoDto[] => {
+    const todosOnDate = (categoryTodos[catId] ?? []).filter((t) => t.date === selectedDate);
+    if (
+      !draggingTodo ||
+      draggingTodo.categoryId !== catId ||
+      dragOverTodoId === null
+    ) {
+      return todosOnDate;
+    }
+    const fromIdx = todosOnDate.findIndex((t) => t.id === draggingTodo.id);
+    const toIdx = todosOnDate.findIndex((t) => t.id === dragOverTodoId);
+    if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return todosOnDate;
+    const reordered = [...todosOnDate];
+    const [removed] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, removed);
+    return reordered;
+  };
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
@@ -573,19 +814,36 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                       if (el) itemRefs.current.set(cat.id, el);
                       else itemRefs.current.delete(cat.id);
                     }}
-                    className={`category-block${isDragging ? ' dragging' : ''}`}
+                    className={`category-block${isDragging ? ' dragging' : ''}${dragOverCategoryId === cat.id ? ' cat-todo-drop-target' : ''}`}
                     draggable
                     onDragStart={(e) => handleCategoryDragStart(e, originalIndex)}
                     onDragEnd={handleCategoryDragEnd}
                     onDragEnter={(e) => {
                       e.preventDefault();
-                      if (draggingIndex !== null && draggingIndex !== originalIndex) {
+                      if (draggingTodo && draggingTodo.categoryId !== cat.id) {
+                        // 투두를 다른 카테고리로 드래그 중
+                        setDragOverCategoryId(cat.id);
+                      } else if (draggingIndex !== null && draggingIndex !== originalIndex) {
                         savePositions();
                         setDragOverIndex(originalIndex);
                       }
                     }}
-                    onDragOver={handleCategoryDragOver}
-                    onDrop={handleCategoryDrop}
+                    onDragLeave={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                        setDragOverCategoryId(null);
+                      }
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                    }}
+                    onDrop={(e) => {
+                      if (draggingTodo && draggingTodo.categoryId !== cat.id) {
+                        handleCategoryTodoDrop(e, cat.id);
+                      } else {
+                        handleCategoryDrop(e);
+                      }
+                    }}
                   >
                     <div
                       className="category-header"
@@ -628,30 +886,40 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                       )}
                     </div>
                     <ul className="todo-list">
-                      {(categoryTodos[cat.id] ?? [])
-                        .filter((t) => t.date === selectedDate)
-                        .map((todo) => {
+                      {getPreviewTodos(cat.id).map((todo) => {
                           const isDraggingThis = draggingTodo?.id === todo.id;
-                          const isDragOver = dragOverTodoId === todo.id;
                           return (
                             <li
                               key={todo.id}
-                              className={`todo-item${isDraggingThis ? ' todo-dragging' : ''}${isDragOver ? ' todo-drag-over' : ''}`}
+                              ref={(el) => {
+                                if (el) todoItemRefs.current.set(todo.id, el);
+                                else todoItemRefs.current.delete(todo.id);
+                              }}
+                              className={`todo-item${isDraggingThis ? ' todo-dragging' : ''}`}
                               draggable
                               onDragStart={(e) => handleTodoDragStart(e, todo)}
                               onDragEnd={handleTodoDragEnd}
-                              onDragEnter={(e) => handleTodoDragEnter(e, todo.id)}
+                              onDragEnter={(e) => handleTodoDragEnter(e, todo)}
                               onDragOver={(e) => e.preventDefault()}
-                              onDrop={(e) => handleTodoDrop(e, todo)}
+                              onDrop={(e) => handleTodoDrop(e, cat.id)}
                             >
-                              <label className="todo-label">
+                              <div className="todo-label">
                                 <input
                                   type="checkbox"
                                   checked={todo.done}
                                   onChange={() => handleToggleDone(todo)}
+                                  onClick={(e) => e.stopPropagation()}
                                 />
-                                <span className={todo.done ? 'done' : ''}>{todo.name}</span>
-                              </label>
+                                <span
+                                  className={`todo-name${todo.done ? ' done' : ''}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenTodoPopup(todo);
+                                  }}
+                                >
+                                  {todo.name}
+                                </span>
+                              </div>
                             </li>
                           );
                         })}
@@ -699,6 +967,71 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
           )}
         </section>
       </div>
+
+      {/* 투두 바텀시트 팝업 */}
+      {todoPopup && (
+        <div className="todo-popup-overlay" onClick={handleCloseTodoPopup}>
+          <div className="todo-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="todo-popup-handle" />
+
+            {popupMode === 'menu' && (
+              <>
+                <p className="todo-popup-title">{todoPopup.name}</p>
+                <div className="todo-popup-actions">
+                  <button onClick={() => setPopupMode('edit')}>✏️ &nbsp;수정</button>
+                  <button onClick={() => setPopupMode('date')}>📅 &nbsp;날짜 바꾸기</button>
+                  {todoPopup.date !== toDateStr(new Date()) && (
+                    <button onClick={handleDoToday}>⚡ &nbsp;오늘하기</button>
+                  )}
+                  <button className="todo-popup-delete" onClick={handleDeleteTodo}>
+                    🗑️ &nbsp;삭제
+                  </button>
+                </div>
+              </>
+            )}
+
+            {popupMode === 'edit' && (
+              <>
+                <p className="todo-popup-label">할일 이름 수정</p>
+                <input
+                  className="todo-popup-input"
+                  value={popupEditName}
+                  onChange={(e) => setPopupEditName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveEditName();
+                    if (e.key === 'Escape') setPopupMode('menu');
+                  }}
+                  autoFocus
+                />
+                <div className="todo-popup-row">
+                  <button onClick={() => setPopupMode('menu')}>취소</button>
+                  <button className="todo-popup-confirm" onClick={handleSaveEditName}>
+                    저장
+                  </button>
+                </div>
+              </>
+            )}
+
+            {popupMode === 'date' && (
+              <>
+                <p className="todo-popup-label">날짜 변경</p>
+                <input
+                  type="date"
+                  className="todo-popup-input"
+                  value={popupNewDate}
+                  onChange={(e) => setPopupNewDate(e.target.value)}
+                />
+                <div className="todo-popup-row">
+                  <button onClick={() => setPopupMode('menu')}>취소</button>
+                  <button className="todo-popup-confirm" onClick={handleSaveDateChange}>
+                    저장
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

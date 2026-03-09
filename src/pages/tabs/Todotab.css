@@ -193,6 +193,12 @@
   .category-block.dragging {
     opacity: 0.4;
   }
+
+  .category-block.cat-todo-drop-target {
+    outline: 2px dashed rgba(74, 158, 255, 0.7);
+    background: rgba(74, 158, 255, 0.08);
+    transition: outline 0.1s ease, background 0.1s ease;
+  }
   
 .category-block:active {
   cursor: grabbing;
@@ -275,14 +281,29 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    cursor: pointer;
+    cursor: default;
   }
   
-  .todo-label input {
+  .todo-label input[type='checkbox'] {
     margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .todo-name {
+    flex: 1;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 1px 3px;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .todo-name:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #e8e8e8;
   }
   
-  .todo-label span.done {
+  .todo-name.done {
     color: #888;
   }
 
@@ -299,8 +320,8 @@
   opacity: 0.35;
 }
 
-.todo-item.todo-drag-over {
-  border-top: 2px solid rgba(74, 158, 255, 0.7);
+.todo-item.todo-dragging {
+  will-change: transform;
 }
 
 /* 캘린더 날짜 드롭 타겟 */
@@ -384,4 +405,133 @@
     color: #fff;
     border-color: rgba(255, 255, 255, 0.3);
   }
-  
+
+/* 투두 바텀시트 팝업 */
+.todo-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.todo-popup {
+  width: 100%;
+  max-width: 520px;
+  background: #1e1e2e;
+  border-radius: 16px 16px 0 0;
+  padding: 1rem 1.25rem 2.5rem;
+  animation: todoPopupSlideUp 0.22s ease;
+}
+
+@keyframes todoPopupSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.todo-popup-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin: 0 auto 1rem;
+}
+
+.todo-popup-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e8e8e8;
+  margin: 0 0 1rem;
+  text-align: center;
+  word-break: break-all;
+}
+
+.todo-popup-label {
+  font-size: 0.82rem;
+  color: #999;
+  margin: 0 0 0.45rem;
+}
+
+.todo-popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.todo-popup-actions button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.todo-popup-actions button:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.todo-popup-delete {
+  color: #ff6b6b !important;
+}
+
+.todo-popup-delete:hover {
+  background: rgba(255, 107, 107, 0.12) !important;
+}
+
+.todo-popup-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  outline: none;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+}
+
+.todo-popup-input:focus {
+  border-color: rgba(74, 158, 255, 0.6);
+}
+
+.todo-popup-input[type='date'] {
+  color-scheme: dark;
+}
+
+.todo-popup-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.todo-popup-row button {
+  flex: 1;
+  padding: 0.65rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.todo-popup-row button:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.todo-popup-confirm {
+  background: rgba(74, 158, 255, 0.25) !important;
+  color: #6ab4ff !important;
+}
+
+.todo-popup-confirm:hover {
+  background: rgba(74, 158, 255, 0.4) !important;
+}
