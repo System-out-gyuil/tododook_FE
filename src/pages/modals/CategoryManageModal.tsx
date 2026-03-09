@@ -148,13 +148,14 @@ export default function CategoryManageModal({ onClose, onSuccess }: CategoryMana
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = async (e: React.DragEvent, toIndex: number) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
+    const fromIndex = draggingIndex;
+    const toIndex = dragOverIndex;
     clearTransforms();
     setDraggingIndex(null);
     setDragOverIndex(null);
-    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-    if (Number.isNaN(fromIndex) || fromIndex === toIndex) return;
+    if (fromIndex === null || toIndex === null || fromIndex === toIndex) return;
     const reordered = [...list];
     const [removed] = reordered.splice(fromIndex, 1);
     reordered.splice(toIndex, 0, removed);
@@ -222,15 +223,15 @@ export default function CategoryManageModal({ onClose, onSuccess }: CategoryMana
                     draggable
                     onDragStart={(e) => handleDragStart(e, originalIndex)}
                     onDragEnd={handleDragEnd}
-                    onDragOver={(e) => {
+                    onDragEnter={(e) => {
                       e.preventDefault();
-                      e.dataTransfer.dropEffect = 'move';
-                      if (draggingIndex !== null && draggingIndex !== originalIndex && dragOverIndex !== originalIndex) {
+                      if (draggingIndex !== null && draggingIndex !== originalIndex) {
                         savePositions();
                         setDragOverIndex(originalIndex);
                       }
                     }}
-                    onDrop={(e) => handleDrop(e, originalIndex)}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
                   >
                     {editingId === cat.id ? (
                       <form onSubmit={handleUpdate} className="category-edit-form">

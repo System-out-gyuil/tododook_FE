@@ -172,13 +172,15 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleCategoryDrop = async (e: React.DragEvent, toIndex: number) => {
+  const handleCategoryDrop = async (e: React.DragEvent) => {
     e.preventDefault();
+    // 드래그 이벤트 타겟이 아닌 상태값을 사용 — 드래그 아이템 자신 위에 드롭해도 정확히 동작
+    const fromIndex = draggingIndex;
+    const toIndex = dragOverIndex;
     clearTransforms();
     setDraggingIndex(null);
     setDragOverIndex(null);
-    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-    if (Number.isNaN(fromIndex) || fromIndex === toIndex) return;
+    if (fromIndex === null || toIndex === null || fromIndex === toIndex) return;
     const reordered = [...categories];
     const [removed] = reordered.splice(fromIndex, 1);
     reordered.splice(toIndex, 0, removed);
@@ -291,16 +293,15 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                     draggable
                     onDragStart={(e) => handleCategoryDragStart(e, originalIndex)}
                     onDragEnd={handleCategoryDragEnd}
-                    onDragOver={(e) => {
+                    onDragEnter={(e) => {
                       e.preventDefault();
-                      e.dataTransfer.dropEffect = 'move';
-                      // dragOver는 매 프레임 발화 — 값이 바뀔 때만 setState해 불필요한 리렌더 방지
-                      if (draggingIndex !== null && draggingIndex !== originalIndex && dragOverIndex !== originalIndex) {
+                      if (draggingIndex !== null && draggingIndex !== originalIndex) {
                         savePositions();
                         setDragOverIndex(originalIndex);
                       }
                     }}
-                    onDrop={(e) => handleCategoryDrop(e, originalIndex)}
+                    onDragOver={handleCategoryDragOver}
+                    onDrop={handleCategoryDrop}
                   >
                     <div
                       className="category-header"
