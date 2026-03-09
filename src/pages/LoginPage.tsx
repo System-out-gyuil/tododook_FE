@@ -17,7 +17,7 @@ export default function LoginPage() {
       const res = await login(form);
       localStorage.setItem('accessToken', res.accessToken);
       localStorage.setItem('user', JSON.stringify({ userId: res.userId, name: res.name, email: res.email }));
-      navigate('/');
+      navigate('/app');
     } catch (err) {
       setError(err instanceof Error ? err.message : '로그인에 실패했습니다.');
     } finally {

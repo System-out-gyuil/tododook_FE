@@ -1,0 +1,123 @@
+.main-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding-bottom: 60px;
+}
+
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.main-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #e8e8e8;
+}
+
+.header-actions {
+  position: relative;
+}
+
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e8e8e8;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hamburger-line {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  margin: 0 auto;
+  border-radius: 1px;
+}
+
+.hamburger-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 160px;
+  background: #1e2a3a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 50;
+}
+
+.hamburger-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #e8e8e8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hamburger-menu button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.main-content {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.main-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: rgba(22, 33, 62, 0.98);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem 0;
+  z-index: 10;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.95rem;
+  color: #a0a0a0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.tab-btn:hover {
+  color: #e8e8e8;
+}
+
+.tab-btn.active {
+  color: #4a9eff;
+  font-weight: 600;
+}

@@ -10,6 +10,8 @@ export default function HomePage() {
   useEffect(() => {
     if (!token) {
       navigate('/login', { replace: true });
+    } else {
+      navigate('/app', { replace: true });
     }
   }, [token, navigate]);
 
