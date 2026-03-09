@@ -288,3 +288,205 @@
   display: flex;
   gap: 0.5rem;
 }
+
+/* ========== Routine Modal ========== */
+
+.routine-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.routine-category-block {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.routine-empty {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.25rem 0 0.5rem 0.5rem;
+}
+
+.routine-list {
+  list-style: none;
+  margin: 0 0 0.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.routine-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+.routine-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.routine-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e8e8e8;
+}
+
+.routine-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.routine-item-badge {
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.72rem;
+  color: #aaa;
+}
+
+.routine-item-badge.badge-auto {
+  background: rgba(74, 158, 255, 0.2);
+  color: #4a9eff;
+}
+
+.routine-item-badge.badge-manual {
+  background: rgba(107, 207, 127, 0.2);
+  color: #6bcf7f;
+}
+
+.routine-item-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.routine-add-btn {
+  width: 100%;
+  padding: 0.4rem;
+  font-size: 0.85rem;
+  color: #888;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.routine-add-btn:hover {
+  color: #c0c0c0;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Routine Form */
+.routine-form {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.routine-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.routine-form-dates {
+  flex-direction: row;
+  gap: 0.75rem;
+}
+
+.routine-form-dates > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.routine-form-label {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.routine-form-hint {
+  font-size: 0.78rem;
+  color: #666;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.routine-dow-group {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.routine-dow-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #aaa;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.routine-dow-btn.active {
+  background: rgba(74, 158, 255, 0.35);
+  border-color: #4a9eff;
+  color: #fff;
+}
+
+.routine-monthly-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.routine-monthly-btn {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #aaa;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.routine-monthly-btn.active {
+  background: rgba(74, 158, 255, 0.35);
+  border-color: #4a9eff;
+  color: #fff;
+}
+
+.routine-form-passivity {
+  padding: 0.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.routine-passivity-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: #c0c0c0;
+}
+
+.routine-passivity-hint {
+  font-size: 0.75rem;
+  color: #666;
+}

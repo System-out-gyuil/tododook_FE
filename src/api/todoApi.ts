@@ -159,3 +159,88 @@ export async function toggleTodoDone(id: number): Promise<TodoDto> {
   if (!res.ok) throw new Error((data?.message as string) ?? '할일 수정 실패');
   return data;
 }
+
+// ========== Routines ==========
+
+export interface RepeatConfig {
+  type: 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly';
+  weeklyDays?: number[];
+  monthlyDays?: number[];
+  yearlyDates?: { month: number; day: number }[];
+}
+
+export interface RoutineDto {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  passivity: boolean;
+  repeatDays: RepeatConfig;
+  categoryId: number;
+}
+
+export async function getRoutinesByCategory(categoryId: number): Promise<RoutineDto[]> {
+  const res = await fetch(`${API_BASE}/routines?categoryId=${categoryId}`, {
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) throw new Error((data?.message as string) ?? '루틴 조회 실패');
+  return data;
+}
+
+export async function createRoutine(body: {
+  categoryId: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  passivity: boolean;
+  repeatDays: string;
+}): Promise<RoutineDto> {
+  const res = await fetch(`${API_BASE}/routines`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) throw new Error((data?.message as string) ?? '루틴 생성 실패');
+  return data;
+}
+
+export async function updateRoutine(
+  id: number,
+  body: {
+    name: string;
+    startDate: string;
+    endDate: string;
+    passivity: boolean;
+    repeatDays: string;
+  }
+): Promise<RoutineDto> {
+  const res = await fetch(`${API_BASE}/routines/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) throw new Error((data?.message as string) ?? '루틴 수정 실패');
+  return data;
+}
+
+export async function deleteRoutine(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/routines/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+  });
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data?.message as string) ?? '루틴 삭제 실패');
+  }
+}

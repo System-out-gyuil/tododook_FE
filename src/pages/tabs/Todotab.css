@@ -263,7 +263,39 @@
   .todo-label span.done {
     color: #888;
   }
-  
+
+.todo-item.ghost-manual {
+  opacity: 0.45;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.todo-item.ghost-manual:hover {
+  opacity: 0.75;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.todo-item.ghost-auto {
+  opacity: 0.6;
+}
+
+.todo-item.ghost-auto:hover {
+  opacity: 0.85;
+}
+
+.ghost-icon {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.ghost-hint {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #666;
+  white-space: nowrap;
+}
+
   .tab-placeholder {
     padding: 1rem 0;
     color: #a0a0a0;

@@ -117,7 +117,7 @@ export default function MainPage() {
         />
       )}
       {modalType === 'routine-manage' && (
-        <RoutineManageModal onClose={() => setModalType(null)} />
+        <RoutineManageModal onClose={() => setModalType(null)} onSuccess={handleCategoryChange} />
       )}
     </div>
   );

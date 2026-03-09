@@ -3,11 +3,14 @@ import Holidays from 'date-holidays';
 import {
   getCategories,
   getTodosByCategory,
+  getRoutinesByCategory,
   createTodo,
   toggleTodoDone,
   reorderCategories,
   type TodoCategoryDto,
   type TodoDto,
+  type RoutineDto,
+  type RepeatConfig,
 } from '../../api/todoApi';
 import './TodoTab.css';
 
@@ -17,6 +20,39 @@ function getDaysInMonth(year: number, month: number): number {
 
 function getFirstDayOfMonth(year: number, month: number): number {
   return new Date(year, month - 1, 1).getDay();
+}
+
+function isRoutineActiveOnDate(routine: RoutineDto, dateStr: string): boolean {
+  const date = new Date(dateStr + 'T00:00:00');
+  const start = new Date(routine.startDate + 'T00:00:00');
+  const end = new Date(routine.endDate + 'T00:00:00');
+  if (date < start || date > end) return false;
+
+  const r: RepeatConfig = routine.repeatDays;
+  const dow = date.getDay();
+  const dom = date.getDate();
+  const month = date.getMonth() + 1;
+
+  switch (r.type) {
+    case 'daily':
+      return true;
+    case 'weekly':
+      return (r.weeklyDays ?? []).includes(dow);
+    case 'biweekly': {
+      const diffDays = Math.round((date.getTime() - start.getTime()) / 86400000);
+      return Math.floor(diffDays / 7) % 2 === 0 && (r.weeklyDays ?? []).includes(dow);
+    }
+    case 'monthly':
+      return (r.monthlyDays ?? []).includes(dom);
+    case 'yearly': {
+      const startMonth = start.getMonth() + 1;
+      const startDay = start.getDate();
+      if (r.yearlyDates && r.yearlyDates.length > 0) {
+        return r.yearlyDates.some((yd) => yd.month === month && yd.day === dom);
+      }
+      return month === startMonth && dom === startDay;
+    }
+  }
 }
 
 function makeGradient(colors: string[]): string {
@@ -95,6 +131,7 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
 
   const [categories, setCategories] = useState<TodoCategoryDto[]>([]);
   const [categoryTodos, setCategoryTodos] = useState<Record<number, TodoDto[]>>({});
+  const [categoryRoutines, setCategoryRoutines] = useState<Record<number, RoutineDto[]>>({});
   const [newTodoByCategory, setNewTodoByCategory] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -109,8 +146,12 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
       const list = await getCategories();
       setCategories(list);
       for (const c of list) {
-        const todos = await getTodosByCategory(c.id);
+        const [todos, routines] = await Promise.all([
+          getTodosByCategory(c.id),
+          getRoutinesByCategory(c.id),
+        ]);
         setCategoryTodos((prev) => ({ ...prev, [c.id]: todos }));
+        setCategoryRoutines((prev) => ({ ...prev, [c.id]: routines }));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : '로드 실패');
@@ -167,6 +208,23 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
       setNewTodoByCategory((prev) => ({ ...prev, [categoryId]: '' }));
     } catch (e) {
       setError(e instanceof Error ? e.message : '할일 생성 실패');
+    }
+  };
+
+  const handleAddRoutineTodo = async (routine: RoutineDto) => {
+    setError('');
+    try {
+      const created = await createTodo({
+        categoryId: routine.categoryId,
+        name: routine.name,
+        date: selectedDate,
+      });
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [routine.categoryId]: [...(prev[routine.categoryId] ?? []), created],
+      }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '할일 추가 실패');
     }
   };
 
@@ -454,6 +512,42 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                             </label>
                           </li>
                         ))}
+                      {(() => {
+                        const realTodosOnDate = (categoryTodos[cat.id] ?? []).filter(
+                          (t) => t.date === selectedDate
+                        );
+                        const ghostRoutines = (categoryRoutines[cat.id] ?? []).filter(
+                          (r) =>
+                            isRoutineActiveOnDate(r, selectedDate) &&
+                            !realTodosOnDate.some((t) => t.name === r.name)
+                        );
+                        return ghostRoutines.map((routine) =>
+                          routine.passivity ? (
+                            <li
+                              key={`ghost-${routine.id}`}
+                              className="todo-item ghost-manual"
+                              onClick={() => handleAddRoutineTodo(routine)}
+                              title="클릭하면 할일로 추가됩니다"
+                            >
+                              <span className="todo-label">
+                                <span className="ghost-icon">○</span>
+                                <span>{routine.name}</span>
+                                <span className="ghost-hint">클릭하여 추가</span>
+                              </span>
+                            </li>
+                          ) : (
+                            <li key={`ghost-${routine.id}`} className="todo-item ghost-auto">
+                              <label className="todo-label">
+                                <input
+                                  type="checkbox"
+                                  onChange={() => handleAddRoutineTodo(routine)}
+                                />
+                                <span>{routine.name}</span>
+                              </label>
+                            </li>
+                          )
+                        );
+                      })()}
                     </ul>
                   </div>
                 );
