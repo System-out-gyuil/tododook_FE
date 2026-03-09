@@ -38,6 +38,7 @@ export interface TodoDto {
   startTime: string | null;
   endTime: string | null;
   categoryId: number;
+  todoOrder: number;
 }
 
 export async function getCategories(): Promise<TodoCategoryDto[]> {
@@ -145,6 +146,33 @@ export async function createTodo(body: {
   const data = await res.json().catch(() => ({}));
   if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
   if (!res.ok) throw new Error((data?.message as string) ?? '할일 생성 실패');
+  return data;
+}
+
+export async function reorderTodos(body: { todoIds: number[] }): Promise<void> {
+  const res = await fetch(`${API_BASE}/todos/reorder`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  });
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data?.message as string) ?? '순서 변경 실패');
+  }
+}
+
+export async function moveTodoDate(id: number, date: string): Promise<TodoDto> {
+  const res = await fetch(`${API_BASE}/todos/${id}/date`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ date }),
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) throw new Error((data?.message as string) ?? '날짜 변경 실패');
   return data;
 }
 

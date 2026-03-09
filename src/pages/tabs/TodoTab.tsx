@@ -7,6 +7,8 @@ import {
   createTodo,
   toggleTodoDone,
   reorderCategories,
+  reorderTodos,
+  moveTodoDate,
   type TodoCategoryDto,
   type TodoDto,
   type RoutineDto,
@@ -132,7 +134,13 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
   const [categories, setCategories] = useState<TodoCategoryDto[]>([]);
   const [categoryTodos, setCategoryTodos] = useState<Record<number, TodoDto[]>>({});
   const [categoryRoutines, setCategoryRoutines] = useState<Record<number, RoutineDto[]>>({});
-  const [newTodoByCategory, setNewTodoByCategory] = useState<Record<number, string>>({});
+  const [addingCatId, setAddingCatId] = useState<number | null>(null);
+  const [newTodoName, setNewTodoName] = useState('');
+
+  // 투두 드래그 상태
+  const [draggingTodo, setDraggingTodo] = useState<{ id: number; categoryId: number } | null>(null);
+  const [dragOverTodoId, setDragOverTodoId] = useState<number | null>(null);
+  const [calendarDropTarget, setCalendarDropTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -190,24 +198,118 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     }
   };
 
-  const handleAddTodo = async (e: React.FormEvent, categoryId: number) => {
-    e.preventDefault();
-    const name = newTodoByCategory[categoryId]?.trim();
-    if (!name) return;
+  const handleAddTodo = async (categoryId: number, name: string) => {
+    const trimmed = name.trim();
+    setAddingCatId(null);
+    setNewTodoName('');
+    if (!trimmed) return;
     setError('');
     try {
       const created = await createTodo({
         categoryId,
-        name,
+        name: trimmed,
         date: selectedDate,
       });
       setCategoryTodos((prev) => ({
         ...prev,
         [categoryId]: [...(prev[categoryId] ?? []), created],
       }));
-      setNewTodoByCategory((prev) => ({ ...prev, [categoryId]: '' }));
     } catch (e) {
       setError(e instanceof Error ? e.message : '할일 생성 실패');
+    }
+  };
+
+  // 투두 드래그 핸들러
+  const handleTodoDragStart = (e: React.DragEvent, todo: TodoDto) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(todo.id));
+    setDraggingTodo({ id: todo.id, categoryId: todo.categoryId });
+    setDragOverTodoId(null);
+  };
+
+  const handleTodoDragEnd = () => {
+    setDraggingTodo(null);
+    setDragOverTodoId(null);
+    setCalendarDropTarget(null);
+  };
+
+  const handleTodoDragEnter = (e: React.DragEvent, targetTodoId: number) => {
+    e.preventDefault();
+    if (draggingTodo && draggingTodo.id !== targetTodoId) {
+      setDragOverTodoId(targetTodoId);
+    }
+  };
+
+  const handleTodoDrop = async (e: React.DragEvent, targetTodo: TodoDto) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggingTodo || draggingTodo.id === targetTodo.id) return;
+    if (draggingTodo.categoryId !== targetTodo.categoryId) return;
+
+    const catId = draggingTodo.categoryId;
+    const todosOnDate = (categoryTodos[catId] ?? []).filter((t) => t.date === selectedDate);
+    const fromIdx = todosOnDate.findIndex((t) => t.id === draggingTodo.id);
+    const toIdx = todosOnDate.findIndex((t) => t.id === targetTodo.id);
+    if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+
+    const reordered = [...todosOnDate];
+    const [removed] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, removed);
+
+    // 낙관적 업데이트
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [catId]: [
+        ...(prev[catId] ?? []).filter((t) => t.date !== selectedDate),
+        ...reordered,
+      ],
+    }));
+
+    setDraggingTodo(null);
+    setDragOverTodoId(null);
+
+    try {
+      await reorderTodos({ todoIds: reordered.map((t) => t.id) });
+    } catch {
+      // 롤백
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [catId]: [
+          ...(prev[catId] ?? []).filter((t) => t.date !== selectedDate),
+          ...todosOnDate,
+        ],
+      }));
+    }
+  };
+
+  // 캘린더 날짜로 드롭 핸들러
+  const handleCalendarDrop = async (e: React.DragEvent, targetDate: string) => {
+    e.preventDefault();
+    setCalendarDropTarget(null);
+    if (!draggingTodo || targetDate === selectedDate) return;
+
+    const { id, categoryId } = draggingTodo;
+    setDraggingTodo(null);
+
+    // 낙관적 업데이트
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [categoryId]: (prev[categoryId] ?? []).map((t) =>
+        t.id === id ? { ...t, date: targetDate } : t
+      ),
+    }));
+
+    try {
+      await moveTodoDate(id, targetDate);
+    } catch {
+      // 롤백
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [categoryId]: (prev[categoryId] ?? []).map((t) =>
+          t.id === id ? { ...t, date: selectedDate } : t
+        ),
+      }));
     }
   };
 
@@ -279,7 +381,12 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
 
   const handleCategoryDragStart = (e: React.DragEvent, index: number) => {
     const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('input') || target.closest('form')) {
+    if (
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('form') ||
+      target.closest('.todo-item')
+    ) {
       e.preventDefault();
       return;
     }
@@ -390,6 +497,7 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
               );
               const totalCount = todosOnDate.length;
               const doneCount = todosOnDate.filter((t) => t.done).length;
+              const remainCount = totalCount - doneCount;
               const allDone = totalCount > 0 && doneCount === totalCount;
               const completedColors = [
                 ...new Set(todosOnDate.filter((t) => t.done).map((t) => t.categoryColor)),
@@ -402,10 +510,21 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                   ? 'rgba(74, 158, 255, 0.35)'
                   : undefined;
 
+              const isCalDrop = calendarDropTarget === dateStr;
+
               return (
                 <div
                   key={dateStr}
-                  className={`calendar-day-cell${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}${isSaturday ? ' saturday' : ''}${isRedDay ? ' sunday' : ''}`}
+                  className={`calendar-day-cell${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}${isSaturday ? ' saturday' : ''}${isRedDay ? ' sunday' : ''}${isCalDrop ? ' cal-drop-target' : ''}`}
+                  onDragOver={(e) => {
+                    if (!draggingTodo) return;
+                    e.preventDefault();
+                    setCalendarDropTarget(dateStr);
+                  }}
+                  onDragLeave={() => {
+                    if (calendarDropTarget === dateStr) setCalendarDropTarget(null);
+                  }}
+                  onDrop={(e) => handleCalendarDrop(e, dateStr)}
                 >
                   <button
                     type="button"
@@ -413,7 +532,7 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                     style={btnBackground ? { background: btnBackground } : undefined}
                     onClick={() => setSelectedDate(dateStr)}
                   >
-                    {allDone ? '✓' : totalCount > 0 ? totalCount : ''}
+                    {allDone ? '✓' : remainCount > 0 ? remainCount : ''}
                   </button>
                   <span className="calendar-day-num">{day}</span>
                 </div>
@@ -477,41 +596,65 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                     >
                       {cat.name}
                     </div>
-                    <form
-                      onSubmit={(e) => handleAddTodo(e, cat.id)}
-                      className="add-todo-form"
-                    >
-                      <input
-                        type="text"
-                        value={newTodoByCategory[cat.id] ?? ''}
-                        onChange={(e) =>
-                          setNewTodoByCategory((prev) => ({
-                            ...prev,
-                            [cat.id]: e.target.value,
-                          }))
-                        }
-                        placeholder={`할일 (${selectedDate})`}
-                        className="add-todo-input"
-                      />
-                      <button type="submit" className="add-todo-btn">
-                        +
-                      </button>
-                    </form>
+                    <div className="add-todo-form">
+                      {addingCatId === cat.id ? (
+                        <input
+                          type="text"
+                          value={newTodoName}
+                          onChange={(e) => setNewTodoName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleAddTodo(cat.id, newTodoName);
+                            if (e.key === 'Escape') {
+                              setAddingCatId(null);
+                              setNewTodoName('');
+                            }
+                          }}
+                          onBlur={() => handleAddTodo(cat.id, newTodoName)}
+                          placeholder={`할일 입력 후 엔터 (${selectedDate})`}
+                          className="add-todo-input"
+                          autoFocus
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          className="add-todo-btn add-todo-open-btn"
+                          onClick={() => {
+                            setAddingCatId(cat.id);
+                            setNewTodoName('');
+                          }}
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
                     <ul className="todo-list">
                       {(categoryTodos[cat.id] ?? [])
                         .filter((t) => t.date === selectedDate)
-                        .map((todo) => (
-                          <li key={todo.id} className="todo-item">
-                            <label className="todo-label">
-                              <input
-                                type="checkbox"
-                                checked={todo.done}
-                                onChange={() => handleToggleDone(todo)}
-                              />
-                              <span className={todo.done ? 'done' : ''}>{todo.name}</span>
-                            </label>
-                          </li>
-                        ))}
+                        .map((todo) => {
+                          const isDraggingThis = draggingTodo?.id === todo.id;
+                          const isDragOver = dragOverTodoId === todo.id;
+                          return (
+                            <li
+                              key={todo.id}
+                              className={`todo-item${isDraggingThis ? ' todo-dragging' : ''}${isDragOver ? ' todo-drag-over' : ''}`}
+                              draggable
+                              onDragStart={(e) => handleTodoDragStart(e, todo)}
+                              onDragEnd={handleTodoDragEnd}
+                              onDragEnter={(e) => handleTodoDragEnter(e, todo.id)}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => handleTodoDrop(e, todo)}
+                            >
+                              <label className="todo-label">
+                                <input
+                                  type="checkbox"
+                                  checked={todo.done}
+                                  onChange={() => handleToggleDone(todo)}
+                                />
+                                <span className={todo.done ? 'done' : ''}>{todo.name}</span>
+                              </label>
+                            </li>
+                          );
+                        })}
                       {(() => {
                         const realTodosOnDate = (categoryTodos[cat.id] ?? []).filter(
                           (t) => t.date === selectedDate
