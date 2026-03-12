@@ -85,12 +85,15 @@
 
 .main-content {
   flex: 1;
-  overflow: auto;
+  /* overflow: auto; */
   padding: 1rem;
+  padding-bottom: calc(var(--todo-tabs-bar-height) + 1rem);
 }
 
 .main-tabs {
   width: 49%;
+  height: var(--todo-tabs-bar-height);
+  background: var(--color-bg);
   position: fixed;
   bottom: 0;
   left: 0;

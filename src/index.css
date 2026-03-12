@@ -44,6 +44,8 @@
   /* 높이 */
   --todo-tab-height: 750px;
   --todo-popup-height: 40%;
+  --todo-tabs-bar-height: 44px;
+
 
   /* ── 폰트 / 기타 ── */
   /* font-family: 'NanumSquareNeo', sans-serif; */
