@@ -1,11 +1,57 @@
+@font-face {
+  font-family: 'NanumSquareNeo';
+  src: url('./utils/NanumSquareNeo/TTF/NanumSquareNeo-aLt.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'appleSDNeo-Light';
+  src: url('./utils/AppleSDGothicNeo-main/AppleSDGothicNeo-Light.ttf') format('truetype');
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* ── 색상 변수 ── */
+
+  /* 브랜드 / 강조 */
+  --color-primary:        #ffffffce;
+  --color-primary-dim:    rgba(255, 255, 255, 0.25);
+  --color-primary-hover:  rgba(74, 158, 255, 0.5);
+  --color-accent:         #7b5cf6;
+
+  /* 배경 */
+  --color-bg:             #161616;
+  --color-bg-surface:     rgba(255, 255, 255, 0.05);
+  --color-bg-elevated:    #1e1e2e;
+  --color-bg-hover:       rgba(255, 255, 255, 0.07);
+
+  /* 테두리 */
+  --color-border:         rgba(255, 255, 255, 0.08);
+  --color-border-focus:   rgb(255, 255, 255);
+
+  /* 텍스트 */
+  --color-text:           rgba(255, 255, 255, 0.87);
+  --color-text-secondary: #a0a0a0;
+  --color-text-muted:     #666;
+  --color-text-done:      #888;
+
+  /* 상태 */
+  --color-danger:         #ff6b6b;
+  --color-danger-dim:     rgba(255, 107, 107, 0.12);
+
+  /* 넓이 */
+  --todo-tab-width: 50%;
+
+  /* 높이 */
+  --todo-tab-height: 750px;
+
+  /* ── 폰트 / 기타 ── */
+  /* font-family: 'NanumSquareNeo', sans-serif; */
+  font-family: 'appleSDNeo-Light', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--color-text);
+  background-color: var(--color-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

@@ -64,7 +64,14 @@ function makeGradient(colors: string[]): string {
   if (colors.length === 1) return colors[0];
   const step = 100 / colors.length;
   const stops = colors.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`).join(', ');
-  return `linear-gradient(135deg, ${stops})`;
+
+  // 투명도
+  // const fade = (c: string) => `color-mix(in srgb, ${c} 70%, transparent)`;
+  // const faded = colors.map(fade);
+  // if (faded.length === 1) return faded[0];
+  // const step = 100 / faded.length;
+  // const stops = faded.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`).join(', ');
+  return `conic-gradient(${stops})`;
 }
 
 function toDateStr(date: Date): string {
@@ -125,6 +132,13 @@ interface TodoTabProps {
 }
 
 export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
+  const storedUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user') ?? '{}'); } catch { return {}; }
+  })();
+  const userName: string = storedUser.name ?? '사용자';
+  const userEmail: string = storedUser.email ?? '';
+  const avatarLetter = userName.charAt(0).toUpperCase();
+
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth() + 1);
@@ -145,6 +159,8 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
   const [popupMode, setPopupMode] = useState<'menu' | 'edit' | 'date'>('menu');
   const [popupEditName, setPopupEditName] = useState('');
   const [popupNewDate, setPopupNewDate] = useState('');
+  const [popupTranslateY, setPopupTranslateY] = useState(0);
+  const popupDragRef = useRef<{ startY: number } | null>(null);
 
   // 투두 드래그 상태
   const [draggingTodo, setDraggingTodo] = useState<{ id: number; categoryId: number } | null>(null);
@@ -435,11 +451,35 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     setPopupMode('menu');
     setPopupEditName(todo.name);
     setPopupNewDate(todo.date);
+    setPopupTranslateY(0);
   };
 
   const handleCloseTodoPopup = () => {
     setTodoPopup(null);
     setPopupMode('menu');
+    setPopupTranslateY(0);
+  };
+
+  const handlePopupHandlePointerDown = (e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    popupDragRef.current = { startY: e.clientY };
+  };
+
+  const handlePopupHandlePointerMove = (e: React.PointerEvent) => {
+    if (!popupDragRef.current) return;
+    const delta = e.clientY - popupDragRef.current.startY;
+    if (delta > 0) setPopupTranslateY(delta);
+  };
+
+  const handlePopupHandlePointerUp = (e: React.PointerEvent) => {
+    if (!popupDragRef.current) return;
+    const delta = e.clientY - popupDragRef.current.startY;
+    popupDragRef.current = null;
+    if (delta > 80) {
+      handleCloseTodoPopup();
+    } else {
+      setPopupTranslateY(0);
+    }
   };
 
   const handleDeleteTodo = async () => {
@@ -694,93 +734,127 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     <div className="todo-tab">
       {error && <p className="todo-error">{error}</p>}
       <div className="todo-layout">
-        <section className="todo-calendar">
-          <div className="calendar-header">
-            <button type="button" className="calendar-arrow" onClick={handlePrevMonth}>
-              ‹
-            </button>
-            <span className="calendar-title">{monthLabel}</span>
-            <button type="button" className="calendar-arrow" onClick={handleNextMonth}>
-              ›
-            </button>
-          </div>
-          <div className="calendar-grid">
-            {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
-              <div
-                key={d}
-                className={`calendar-weekday${i === 0 ? ' sunday' : i === 6 ? ' saturday' : ''}`}
-              >
-                {d}
+
+        <div>
+
+          <section className="user-profile-section">
+            <div className="user-profile-container">
+              <div className="user-avatar">{avatarLetter}</div>
+              <div className="user-info">
+                <span className="user-name">{userName}</span>
+                {userEmail && <span className="user-email">유저 상메</span>}
               </div>
-            ))}
-            {cells.map((day, idx) => {
-              if (day === null) {
-                return <div key={`empty-${idx}`} className="calendar-day-cell empty" />;
-              }
-              const dateStr = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-              const isSelected = dateStr === selectedDate;
-              const isToday =
-                viewYear === today.getFullYear() &&
-                viewMonth === today.getMonth() + 1 &&
-                day === today.getDate();
+            </div>
+          </section>
 
-              const dayOfWeek = new Date(viewYear, viewMonth - 1, day).getDay();
-              const isSaturday = dayOfWeek === 6;
-              const isRedDay = dayOfWeek === 0 || holidayDates.has(dateStr);
+          <section className="todo-calendar">
+            <div className="calendar-header">
+              <span className="calendar-title">{monthLabel}</span>
+              <div className="calendar-arrow-container">
 
-              const todosOnDate = categories.flatMap((cat) =>
-                (categoryTodos[cat.id] ?? [])
-                  .filter((t) => t.date === dateStr)
-                  .map((t) => ({
-                    ...t,
-                    categoryColor: cat.color === 'white' ? '#4a9eff' : cat.color,
-                  }))
-              );
-              const totalCount = todosOnDate.length;
-              const doneCount = todosOnDate.filter((t) => t.done).length;
-              const remainCount = totalCount - doneCount;
-              const allDone = totalCount > 0 && doneCount === totalCount;
-              const completedColors = [
-                ...new Set(todosOnDate.filter((t) => t.done).map((t) => t.categoryColor)),
-              ];
-
-              const btnBackground =
-                completedColors.length > 0
-                  ? makeGradient(completedColors)
-                  : isSelected
-                  ? 'rgba(74, 158, 255, 0.35)'
-                  : undefined;
-
-              const isCalDrop = calendarDropTarget === dateStr;
-
-              return (
+                <button type="button" className="calendar-arrow" onClick={handlePrevMonth}>
+                  ‹
+                </button>
+                <button type="button" className="calendar-arrow" onClick={handleNextMonth}>
+                  ›
+                </button>
+              </div>
+            </div>
+            <div className="calendar-grid">
+              {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
                 <div
-                  key={dateStr}
-                  className={`calendar-day-cell${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}${isSaturday ? ' saturday' : ''}${isRedDay ? ' sunday' : ''}${isCalDrop ? ' cal-drop-target' : ''}`}
-                  onDragOver={(e) => {
-                    if (!draggingTodo) return;
-                    e.preventDefault();
-                    setCalendarDropTarget(dateStr);
-                  }}
-                  onDragLeave={() => {
-                    if (calendarDropTarget === dateStr) setCalendarDropTarget(null);
-                  }}
-                  onDrop={(e) => handleCalendarDrop(e, dateStr)}
+                  key={d}
+                  className={`calendar-weekday${i === 0 ? ' sunday' : i === 6 ? ' saturday' : ''}`}
                 >
-                  <button
-                    type="button"
-                    className="calendar-day-btn"
-                    style={btnBackground ? { background: btnBackground } : undefined}
-                    onClick={() => setSelectedDate(dateStr)}
-                  >
-                    {allDone ? '✓' : remainCount > 0 ? remainCount : ''}
-                  </button>
-                  <span className="calendar-day-num">{day}</span>
+                  {d}
                 </div>
-              );
-            })}
-          </div>
-        </section>
+              ))}
+              {cells.map((day, idx) => {
+                if (day === null) {
+                  return <div key={`empty-${idx}`} className="calendar-day-cell empty" />;
+                }
+                const dateStr = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isSelected = dateStr === selectedDate;
+                const isToday =
+                  viewYear === today.getFullYear() &&
+                  viewMonth === today.getMonth() + 1 &&
+                  day === today.getDate();
+
+                const dayOfWeek = new Date(viewYear, viewMonth - 1, day).getDay();
+                const isSaturday = dayOfWeek === 6;
+                const isRedDay = dayOfWeek === 0 || holidayDates.has(dateStr);
+
+                const todosOnDate = categories.flatMap((cat) =>
+                  (categoryTodos[cat.id] ?? [])
+                    .filter((t) => t.date === dateStr)
+                    .map((t) => ({
+                      ...t,
+                      categoryColor: cat.color === 'white' ? '#4a9eff' : cat.color,
+                    }))
+                );
+                // passivity=false(자동) 루틴 중 아직 실제 투두가 없는 것도 미완료로 카운트
+                const autoRoutineCount = categories.reduce((sum, cat) => {
+                  const realNames = new Set(
+                    (categoryTodos[cat.id] ?? [])
+                      .filter((t) => t.date === dateStr)
+                      .map((t) => t.name)
+                  );
+                  return (
+                    sum +
+                    (categoryRoutines[cat.id] ?? []).filter(
+                      (r) =>
+                        !r.passivity &&
+                        isRoutineActiveOnDate(r, dateStr) &&
+                        !realNames.has(r.name)
+                    ).length
+                  );
+                }, 0);
+                const totalCount = todosOnDate.length + autoRoutineCount;
+                const doneCount = todosOnDate.filter((t) => t.done).length;
+                const remainCount = totalCount - doneCount;
+                const allDone = totalCount > 0 && doneCount === totalCount;
+                const completedColors = [
+                  ...new Set(todosOnDate.filter((t) => t.done).map((t) => t.categoryColor)),
+                ];
+
+                const btnBackground =
+                  completedColors.length > 0
+                    ? makeGradient(completedColors)
+                    : isSelected
+                    ? 'rgba(255, 255, 255, 0.35)'
+                    : undefined;
+
+                const isCalDrop = calendarDropTarget === dateStr;
+
+                return (
+                  <div
+                    key={dateStr}
+                    className={`calendar-day-cell${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}${isSaturday ? ' saturday' : ''}${isRedDay ? ' sunday' : ''}${isCalDrop ? ' cal-drop-target' : ''}`}
+                    onDragOver={(e) => {
+                      if (!draggingTodo) return;
+                      e.preventDefault();
+                      setCalendarDropTarget(dateStr);
+                    }}
+                    onDragLeave={() => {
+                      if (calendarDropTarget === dateStr) setCalendarDropTarget(null);
+                    }}
+                    onDrop={(e) => handleCalendarDrop(e, dateStr)}
+                  >
+                    <button
+                      type="button"
+                      className="calendar-day-btn"
+                      style={btnBackground ? { background: btnBackground , border: '#e8e8e8' }: undefined}
+                      onClick={() => setSelectedDate(dateStr)}
+                    >
+                      {allDone ? '✓' : remainCount > 0 ? remainCount : ''}
+                    </button>
+                    <span className="calendar-day-num">{day}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
 
         <section className="todo-categories">
           <h3 className="categories-title">카테고리 · 할일</h3>
@@ -845,34 +919,17 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                       }
                     }}
                   >
-                    <div
-                      className="category-header"
-                      style={{
-                        borderLeftColor:
-                          cat.color === 'white' ? '#4a9eff' : cat.color,
-                      }}
-                    >
-                      {cat.name}
-                    </div>
-                    <div className="add-todo-form">
-                      {addingCatId === cat.id ? (
-                        <input
-                          type="text"
-                          value={newTodoName}
-                          onChange={(e) => setNewTodoName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleAddTodo(cat.id, newTodoName);
-                            if (e.key === 'Escape') {
-                              setAddingCatId(null);
-                              setNewTodoName('');
-                            }
-                          }}
-                          onBlur={() => handleAddTodo(cat.id, newTodoName)}
-                          placeholder={`할일 입력 후 엔터 (${selectedDate})`}
-                          className="add-todo-input"
-                          autoFocus
-                        />
-                      ) : (
+                    <div className="category-header-container">
+                      <div
+                        className="category-header"
+                        style={{
+                          borderLeftColor:
+                            cat.color === 'white' ? '#4a9eff' : cat.color,
+                        }}
+                      >
+                        {cat.name}
+                      </div>
+                      <div className="add-todo-form">
                         <button
                           type="button"
                           className="add-todo-btn add-todo-open-btn"
@@ -883,7 +940,7 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                         >
                           +
                         </button>
-                      )}
+                      </div>
                     </div>
                     <ul className="todo-list">
                       {getPreviewTodos(cat.id).map((todo) => {
@@ -959,6 +1016,26 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                           )
                         );
                       })()}
+                      {addingCatId === cat.id && (
+                        <li className="todo-item todo-add-input-item">
+                          <input
+                            type="text"
+                            value={newTodoName}
+                            onChange={(e) => setNewTodoName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleAddTodo(cat.id, newTodoName);
+                              if (e.key === 'Escape') {
+                                setAddingCatId(null);
+                                setNewTodoName('');
+                              }
+                            }}
+                            onBlur={() => handleAddTodo(cat.id, newTodoName)}
+                            placeholder="할일 이름 입력 후 엔터"
+                            className="add-todo-input"
+                            autoFocus
+                          />
+                        </li>
+                      )}
                     </ul>
                   </div>
                 );
@@ -971,8 +1048,20 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
       {/* 투두 바텀시트 팝업 */}
       {todoPopup && (
         <div className="todo-popup-overlay" onClick={handleCloseTodoPopup}>
-          <div className="todo-popup" onClick={(e) => e.stopPropagation()}>
-            <div className="todo-popup-handle" />
+          <div
+            className="todo-popup"
+            style={{
+              transform: `translateY(${popupTranslateY}px)`,
+              transition: popupDragRef.current ? 'none' : 'transform 0.2s ease',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="todo-popup-handle"
+              onPointerDown={handlePopupHandlePointerDown}
+              onPointerMove={handlePopupHandlePointerMove}
+              onPointerUp={handlePopupHandlePointerUp}
+            />
 
             {popupMode === 'menu' && (
               <>

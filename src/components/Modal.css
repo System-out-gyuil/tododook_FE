@@ -10,8 +10,8 @@
 }
 
 .modal-box {
-  background: linear-gradient(180deg, #1e2a3a 0%, #16213e 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   min-width: 280px;
   max-width: 90vw;
@@ -444,7 +444,7 @@
 }
 
 .routine-dow-btn.active {
-  background: rgba(74, 158, 255, 0.35);
+  background: var(--color-primary);
   border-color: #4a9eff;
   color: #fff;
 }
@@ -467,7 +467,7 @@
 }
 
 .routine-monthly-btn.active {
-  background: rgba(74, 158, 255, 0.35);
+  background: var(--color-primary);
   border-color: #4a9eff;
   color: #fff;
 }

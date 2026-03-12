@@ -58,7 +58,7 @@ export default function MainPage() {
   return (
     <div className="main-page">
       <header className="main-header">
-        <h1>투두둑</h1>
+        <h1></h1>
         <div className="header-actions" ref={menuRef}>
           <button
             type="button"
