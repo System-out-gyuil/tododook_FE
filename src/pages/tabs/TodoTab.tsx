@@ -20,6 +20,7 @@ import {
 } from '../../api/todoApi';
 import './TodoTab.css';
 
+
 function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
@@ -888,8 +889,6 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
         </div>
 
         <section className="todo-categories">
-          <h3 className="categories-title">카테고리 · 할일</h3>
-          <p className="categories-hint">카테고리는 우측 상단 메뉴(≡)에서 등록·관리할 수 있습니다.</p>
           {loading ? (
             <p className="todo-loading">로딩 중...</p>
           ) : (

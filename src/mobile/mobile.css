@@ -1,0 +1,28 @@
+@media (max-width: 700px) {
+
+    .todo-tab {
+        width: 100%;
+        height: 100%;
+    }
+
+    .todo-layout {
+        flex-direction: column;
+    }
+
+    .todo-calendar {
+        width: 100%;
+    }
+
+    .todo-categories {
+        width: 100%;
+        padding: 0;
+    }
+
+    .main-content {
+        padding-bottom: calc(var(--todo-tabs-bar-height) + 3rem);
+    }
+
+    .todo-popup {
+        width: 80%;
+    }
+}

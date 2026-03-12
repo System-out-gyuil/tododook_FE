@@ -91,7 +91,7 @@
 }
 
 .main-tabs {
-  width: 49%;
+  width: var(--todo-tab-width);
   height: var(--todo-tabs-bar-height);
   background: var(--color-bg);
   position: fixed;

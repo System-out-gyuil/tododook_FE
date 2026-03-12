@@ -118,3 +118,11 @@ button:focus-visible {
 input {
   font-family: 'appleSDNeo-Light', sans-serif;
 }
+
+@media (max-width: 700px) {
+  :root {
+    --todo-tab-width: 100%;
+    --todo-tab-height: 100%;
+    --todo-tabs-bar-height: 60px;
+  }
+}

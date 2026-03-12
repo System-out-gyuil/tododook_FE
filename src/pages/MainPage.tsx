@@ -7,6 +7,8 @@ import CategoryRegisterModal from './modals/CategoryRegisterModal';
 import CategoryManageModal from './modals/CategoryManageModal';
 import RoutineManageModal from './modals/RoutineManageModal';
 import './MainPage.css';
+import '../mobile/mobile.css';
+
 
 type TabId = 'todo' | 'timeline' | 'profile';
 type ModalType = 'category-register' | 'category-manage' | 'routine-manage' | null;

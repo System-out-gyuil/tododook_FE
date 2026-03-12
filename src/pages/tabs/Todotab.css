@@ -32,7 +32,7 @@
   }
 
   .user-profile-section {
-    width: 500px;
+    width: 100%;
     /* background: rgba(255, 255, 255, 0.05); */
     border-radius: 12px;
     padding: 0.5rem;
@@ -235,18 +235,6 @@
 
   .todo-categories::-webkit-scrollbar {
     display: none;
-  }
-  
-  .categories-title {
-    margin: 0 0 0.25rem 0;
-    font-size: 1rem;
-    color: #e8e8e8;
-  }
-  
-  .categories-hint {
-    margin: 0 0 0.75rem 0;
-    font-size: 0.8rem;
-    color: #888;
   }
   
   .todo-loading,
