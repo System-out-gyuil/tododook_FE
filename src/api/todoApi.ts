@@ -215,6 +215,23 @@ export async function moveTodoCategory(id: number, categoryId: number): Promise<
   return data;
 }
 
+export async function updateTodoTime(
+  id: number,
+  startTime: string | null,
+  endTime: string | null
+): Promise<TodoDto> {
+  const res = await fetch(`${API_BASE}/todos/${id}/time`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ startTime, endTime }),
+    credentials: 'include',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (handleAuthError(res.status)) throw new Error('인증이 만료되었습니다.');
+  if (!res.ok) throw new Error((data?.message as string) ?? '시간 변경 실패');
+  return data;
+}
+
 export async function toggleTodoDone(id: number): Promise<TodoDto> {
   const res = await fetch(`${API_BASE}/todos/${id}/done`, {
     method: 'PATCH',

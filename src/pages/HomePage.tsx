@@ -11,7 +11,7 @@ export default function HomePage() {
     if (!token) {
       navigate('/login', { replace: true });
     } else {
-      navigate('/app', { replace: true });
+      navigate('/tododook', { replace: true });
     }
   }, [token, navigate]);
 

@@ -38,10 +38,12 @@
   --color-danger-dim:     rgba(255, 107, 107, 0.12);
 
   /* 넓이 */
+  --auth-page-width: 100%;
   --todo-tab-width: 50%;
 
   /* 높이 */
   --todo-tab-height: 750px;
+  --todo-popup-height: 40%;
 
   /* ── 폰트 / 기타 ── */
   /* font-family: 'NanumSquareNeo', sans-serif; */
@@ -109,4 +111,8 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+input {
+  font-family: 'appleSDNeo-Light', sans-serif;
 }

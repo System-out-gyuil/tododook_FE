@@ -11,6 +11,7 @@ import {
   moveTodoDate,
   moveTodoCategory,
   updateTodoName,
+  updateTodoTime,
   deleteTodo,
   type TodoCategoryDto,
   type TodoDto,
@@ -156,9 +157,11 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
 
   // 투두 팝업 상태
   const [todoPopup, setTodoPopup] = useState<TodoDto | null>(null);
-  const [popupMode, setPopupMode] = useState<'menu' | 'edit' | 'date'>('menu');
+  const [popupMode, setPopupMode] = useState<'menu' | 'edit' | 'date' | 'time'>('menu');
   const [popupEditName, setPopupEditName] = useState('');
   const [popupNewDate, setPopupNewDate] = useState('');
+  const [popupStartTime, setPopupStartTime] = useState('');
+  const [popupEndTime, setPopupEndTime] = useState('');
   const [popupTranslateY, setPopupTranslateY] = useState(0);
   const popupDragRef = useRef<{ startY: number } | null>(null);
 
@@ -451,6 +454,8 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     setPopupMode('menu');
     setPopupEditName(todo.name);
     setPopupNewDate(todo.date);
+    setPopupStartTime(todo.startTime ? todo.startTime.slice(0, 5) : '');
+    setPopupEndTime(todo.endTime ? todo.endTime.slice(0, 5) : '');
     setPopupTranslateY(0);
   };
 
@@ -571,6 +576,32 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
         ),
       }));
       setError(e instanceof Error ? e.message : '날짜 변경 실패');
+    }
+  };
+
+  const handleSaveTime = async () => {
+    if (!todoPopup) return;
+    const startTime = popupStartTime || null;
+    const endTime = popupEndTime || null;
+    const backup = todoPopup;
+    const updated = { ...todoPopup, startTime, endTime };
+    setTodoPopup(null);
+    setCategoryTodos((prev) => ({
+      ...prev,
+      [todoPopup.categoryId]: (prev[todoPopup.categoryId] ?? []).map((t) =>
+        t.id === todoPopup.id ? updated : t
+      ),
+    }));
+    try {
+      await updateTodoTime(todoPopup.id, startTime, endTime);
+    } catch (e) {
+      setCategoryTodos((prev) => ({
+        ...prev,
+        [backup.categoryId]: (prev[backup.categoryId] ?? []).map((t) =>
+          t.id === backup.id ? backup : t
+        ),
+      }));
+      setError(e instanceof Error ? e.message : '시간 변경 실패');
     }
   };
 
@@ -1068,6 +1099,7 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                 <p className="todo-popup-title">{todoPopup.name}</p>
                 <div className="todo-popup-actions">
                   <button onClick={() => setPopupMode('edit')}>✏️ &nbsp;수정</button>
+                  <button onClick={() => setPopupMode('time')}>⏰ &nbsp;시간 등록하기</button>
                   <button onClick={() => setPopupMode('date')}>📅 &nbsp;날짜 바꾸기</button>
                   {todoPopup.date !== toDateStr(new Date()) && (
                     <button onClick={handleDoToday}>⚡ &nbsp;오늘하기</button>
@@ -1113,6 +1145,36 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                 <div className="todo-popup-row">
                   <button onClick={() => setPopupMode('menu')}>취소</button>
                   <button className="todo-popup-confirm" onClick={handleSaveDateChange}>
+                    저장
+                  </button>
+                </div>
+              </>
+            )}
+
+            {popupMode === 'time' && (
+              <>
+                <p className="todo-popup-label">시간 등록</p>
+                <div className="todo-popup-time-row">
+                  <label className="todo-popup-time-label">시작</label>
+                  <input
+                    type="time"
+                    className="todo-popup-input todo-popup-time-input"
+                    value={popupStartTime}
+                    onChange={(e) => setPopupStartTime(e.target.value)}
+                  />
+                </div>
+                <div className="todo-popup-time-row">
+                  <label className="todo-popup-time-label">종료</label>
+                  <input
+                    type="time"
+                    className="todo-popup-input todo-popup-time-input"
+                    value={popupEndTime}
+                    onChange={(e) => setPopupEndTime(e.target.value)}
+                  />
+                </div>
+                <div className="todo-popup-row">
+                  <button onClick={() => setPopupMode('menu')}>취소</button>
+                  <button className="todo-popup-confirm" onClick={handleSaveTime}>
                     저장
                   </button>
                 </div>

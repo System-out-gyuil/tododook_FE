@@ -22,6 +22,7 @@ export default function CategoryManageModal({ onClose, onSuccess }: CategoryMana
   const [editColor, setEditColor] = useState('white');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const itemRefs = useRef<Map<number, HTMLLIElement>>(new Map());
@@ -79,8 +80,8 @@ export default function CategoryManageModal({ onClose, onSuccess }: CategoryMana
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('이 카테고리를 삭제할까요? 연결된 할일은 유지되며, 카테고리만 삭제됩니다.')) return;
+  const handleDeleteConfirm = async (id: number) => {
+    setConfirmDeleteId(null);
     setError('');
     try {
       await deleteCategory(id);
@@ -265,6 +266,28 @@ export default function CategoryManageModal({ onClose, onSuccess }: CategoryMana
                           </button>
                         </div>
                       </form>
+                    ) : confirmDeleteId === cat.id ? (
+                      <div className="category-delete-confirm">
+                        <span className="category-delete-confirm-msg">
+                          ⚠️ 투두가 있습니다. 정말 삭제하시겠습니까?
+                        </span>
+                        <div className="category-edit-actions">
+                          <button
+                            type="button"
+                            className="modal-btn danger small"
+                            onClick={() => handleDeleteConfirm(cat.id)}
+                          >
+                            예
+                          </button>
+                          <button
+                            type="button"
+                            className="modal-btn secondary small"
+                            onClick={() => setConfirmDeleteId(null)}
+                          >
+                            아니오
+                          </button>
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <span
@@ -287,7 +310,7 @@ export default function CategoryManageModal({ onClose, onSuccess }: CategoryMana
                           <button
                             type="button"
                             className="modal-btn danger small"
-                            onClick={() => handleDelete(cat.id)}
+                            onClick={() => setConfirmDeleteId(cat.id)}
                           >
                             삭제
                           </button>

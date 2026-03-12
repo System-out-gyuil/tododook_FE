@@ -490,3 +490,16 @@
   font-size: 0.75rem;
   color: #666;
 }
+
+.category-delete-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.4rem 0;
+}
+
+.category-delete-confirm-msg {
+  font-size: 0.88rem;
+  color: #ffb347;
+}
