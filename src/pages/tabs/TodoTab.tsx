@@ -875,7 +875,7 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
                     <button
                       type="button"
                       className="calendar-day-btn"
-                      style={btnBackground ? { background: btnBackground , border: '#e8e8e8' }: undefined}
+                      style={btnBackground ? { background: btnBackground , border: '1px solidrgba(232, 232, 232, 0.8)' }: undefined}
                       onClick={() => setSelectedDate(dateStr)}
                     >
                       {allDone ? '✓' : remainCount > 0 ? remainCount : ''}

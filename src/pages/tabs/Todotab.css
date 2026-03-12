@@ -168,6 +168,10 @@
   pointer-events: none;
 }
 
+.calendar-day-btn:hover {
+  background: var(--color-primary-dim);
+  border: 1px solid #ffffff !important;
+}
 .calendar-day-btn {
   width: 100%;
   aspect-ratio: 1;
@@ -187,18 +191,14 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
-.calendar-day-btn:hover {
-  background: var(--color-primary-dim);
-  border-color: var(--color-border);
-}
 
 .calendar-day-cell.selected .calendar-day-btn {
-  border-color: #4a9eff;
+  border-color: var(--color-border-focus);
   color: #fff;
 }
 
 .calendar-day-cell.today .calendar-day-btn {
-  border: 1.5px solid var(--color-border-focus) !important;
+  border: 1.5px solid var(--color-border-today) !important;
 }
 
 .calendar-day-num {
@@ -220,6 +220,10 @@
 .calendar-day-cell.selected .calendar-day-num {
   color: #fff;
   font-weight: 600;
+}
+
+.calendar-day-cell.today .calendar-day-num{
+  color: #00fff2;
 }
   
   .todo-categories {

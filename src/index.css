@@ -26,6 +26,7 @@
   /* 테두리 */
   --color-border:         rgba(255, 255, 255, 0.08);
   --color-border-focus:   rgb(255, 255, 255);
+  --color-border-today:   #00fff2;
 
   /* 텍스트 */
   --color-text:           rgba(255, 255, 255, 0.87);
@@ -83,6 +84,13 @@ h1 {
   line-height: 1.1;
 }
 
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:active {
+  outline: none;
+}
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -93,13 +101,6 @@ button {
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
 @media (prefers-color-scheme: light) {

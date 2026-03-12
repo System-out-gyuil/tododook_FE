@@ -439,7 +439,7 @@ export default function TimelineTab() {
                     className={popup.done ? 'tl-popup-undone' : 'tl-popup-done'}
                     onClick={handleToggleDone}
                   >
-                    {popup.done ? '↩️ \u00a0미완료로 변경' : '✅ \u00a0완료'}
+                    {popup.done ? '↩️ \u00a0미완료' : '✅ \u00a0완료'}
                   </button>
                   <button onClick={() => setPopupMode('edit')}>✏️ &nbsp;수정</button>
                   <button onClick={() => setPopupMode('time')}>⏰ &nbsp;시간 등록하기</button>

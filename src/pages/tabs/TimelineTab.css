@@ -353,13 +353,6 @@
     background: rgba(76, 175, 130, 0.12) !important;
   }
   
-  .tl-popup-undone {
-    color: #aaa !important;
-  }
-  
-  .tl-popup-undone:hover {
-    background: rgba(255, 255, 255, 0.07) !important;
-  }
   
   .tl-now-dot {
     width: 10px;
