@@ -35,7 +35,7 @@
     width: 100%;
     /* background: rgba(255, 255, 255, 0.05); */
     border-radius: 12px;
-    padding: 0.5rem;
+    /* padding: 0.5rem; */
     /* border: 1px solid rgba(255, 255, 255, 0.08); */
     margin: 0.75rem;
   }
@@ -215,7 +215,7 @@
 
 .calendar-day-num {
   font-size: 0.68rem;
-  color: #888;
+  color: var(--color-text-light);
   line-height: 1;
   margin-bottom: 10px;
   margin-top: 2px
@@ -323,7 +323,7 @@
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.06);
-    color: #fff;
+    color: var(--color-text);
     outline: none;
     box-sizing: border-box;
   }
@@ -342,7 +342,7 @@
     padding: 0;
     font-size: 1.1rem;
     background: rgba(74, 158, 255, 0.25);
-    color: #fff;
+    color: var(--color-text);
     border: 1px dashed rgba(74, 158, 255, 0.4);
     border-radius: 6px;
     cursor: pointer;
@@ -542,7 +542,7 @@
 .todo-popup-handle {
   width: 36px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-text);
   border-radius: 2px;
   margin: 0 auto 1rem;
   cursor: grab;
@@ -559,7 +559,7 @@
 .todo-popup-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #e8e8e8;
+  color: var(--color-text);
   margin: 0 0 1rem;
   text-align: center;
   word-break: break-all;
@@ -582,8 +582,8 @@
   padding: 0.75rem 1rem;
   border: none;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #e0e0e0;
+  background: var(--color-bg-category);
+  color: var(--color-text);
   font-size: 0.95rem;
   cursor: pointer;
   text-align: left;
@@ -591,7 +591,7 @@
 }
 
 .todo-popup-actions button:hover {
-  background: rgba(255, 255, 255, 0.13);
+  background: var(--color-bg-hover);
 }
 
 .todo-popup-delete {
@@ -606,10 +606,10 @@
   width: 100%;
   padding: 0.55rem 0.75rem;
   font-size: 0.95rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--color-border);  
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.07);
-  color: #fff;
+  color: var(--color-text);
   outline: none;
   margin-bottom: 0.75rem;
   box-sizing: border-box;

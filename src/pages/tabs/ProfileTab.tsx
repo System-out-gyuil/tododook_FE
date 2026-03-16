@@ -112,7 +112,7 @@ function CalendarCard({ category, todos, year, month }: CalendarCardProps) {
           const hasTodos = Boolean(info && info.total > 0);
           const ratio = hasTodos ? info.done / info.total : 0;
           const bgColor = hasTodos
-            ? hexToRgba(category.color, 0.12 + ratio * 0.75)
+            ? hexToRgba(category.color, 0.12 + ratio * 0.55)
             : undefined;
 
           return (
@@ -385,6 +385,7 @@ export default function ProfileTab() {
           onSaved={(updated) => setProfile(updated)}
         />
       )}
+
     </div>
   );
 }

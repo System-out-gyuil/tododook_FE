@@ -30,13 +30,14 @@
   --color-border:         rgba(255, 255, 255, 0.08);
   --color-border-focus:   rgb(255, 255, 255);
   --color-border-today:   #00fff2;
-  --color-border-calendar-day-btn:    rgba(255, 255, 255, 0.06);
+  --color-border-calendar-day-btn:    rgba(105, 105, 105, 0.5);
 
   --color-border-timeline: #252525;
   --color-border-timeline-major: #2c2c2c;
 
   /* 텍스트 */
   --color-text:           rgba(255, 255, 255, 0.87);
+  --color-text-light:     rgba(255, 255, 255, 0.5);
   --color-text-secondary: #a0a0a0;
   --color-text-muted:     #666;
   --color-text-done:      #888;
@@ -128,12 +129,13 @@ button {
   --color-border:         rgb(210, 210, 210);
   --color-border-focus:   rgba(0, 0, 0, 0.8);
   --color-border-today:   #00b4ab;
-  --color-border-calendar-day-btn:    rgba(0, 0, 0, 0.06);
+  --color-border-calendar-day-btn:    rgba(0, 0, 0, 0.25);
 
   --color-border-timeline: #a7a7a7;
   --color-border-timeline-major: #555555;
 
-  --color-text:           rgba(60, 60, 60, 0.87);
+  --color-text:           rgba(113, 113, 113, 0.87);
+  --color-text-light:     rgba(75, 75, 75, 0.5);
   --color-text-secondary: #555555;
   --color-text-muted:     #5d5d5dee;
   --color-text-done:      #bbbbbb;

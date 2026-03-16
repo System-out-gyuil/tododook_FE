@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { deleteAccount } from '../api/userApi';
 import TodoTab from './tabs/TodoTab';
 import TimelineTab from './tabs/TimelineTab';
 import ProfileTab from './tabs/ProfileTab';
@@ -18,9 +19,25 @@ interface SettingsSheetProps {
   theme: Theme;
   onThemeChange: (t: Theme) => void;
   onClose: () => void;
+  onDeleteAccount: () => Promise<void>;
 }
 
-function SettingsSheet({ theme, onThemeChange, onClose }: SettingsSheetProps) {
+function SettingsSheet({ theme, onThemeChange, onClose, onDeleteAccount }: SettingsSheetProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const handleDeleteConfirm = async () => {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await onDeleteAccount();
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : '오류가 발생했습니다.');
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="settings-overlay" onClick={onClose}>
       <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
@@ -50,6 +67,45 @@ function SettingsSheet({ theme, onThemeChange, onClose }: SettingsSheetProps) {
               {theme === 'light' && <span className="settings-theme-check">✓</span>}
             </button>
           </div>
+        </div>
+
+        {/* 계정 섹션 */}
+        <div className="settings-section">
+          <p className="settings-section-label">계정</p>
+          {!confirmDelete ? (
+            <button
+              type="button"
+              className="settings-delete-account-btn"
+              onClick={() => setConfirmDelete(true)}
+            >
+              회원 탈퇴
+            </button>
+          ) : (
+            <div className="settings-delete-confirm">
+              <p className="settings-delete-desc">
+                탈퇴하면 모든 투두, 루틴, 카테고리가 <strong>영구적으로 삭제</strong>됩니다.
+              </p>
+              {deleteError && <p className="settings-delete-error">{deleteError}</p>}
+              <div className="settings-delete-actions">
+                <button
+                  type="button"
+                  className="settings-delete-cancel"
+                  onClick={() => { setConfirmDelete(false); setDeleteError(''); }}
+                  disabled={deleting}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  className="settings-delete-confirm-btn"
+                  onClick={handleDeleteConfirm}
+                  disabled={deleting}
+                >
+                  {deleting ? '처리 중...' : '탈퇴하기'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -105,6 +161,13 @@ export default function MainPage() {
   };
 
   const handleCategoryChange = () => setCategoryRefreshKey((k) => k + 1);
+
+  const handleDeleteAccount = async () => {
+    await deleteAccount();
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
 
   return (
     <div className="main-page">
@@ -193,6 +256,7 @@ export default function MainPage() {
           theme={theme}
           onThemeChange={(t) => setTheme(t)}
           onClose={() => setSettingsOpen(false)}
+          onDeleteAccount={handleDeleteAccount}
         />
       )}
     </div>

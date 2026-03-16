@@ -61,3 +61,15 @@ export async function updateStatusMessage(statusMessage: string): Promise<UserPr
   if (!res.ok) throw new Error((data?.message as string) ?? '상태 메시지 변경 실패');
   return data;
 }
+
+export async function deleteAccount(): Promise<void> {
+  const res = await fetch(`${API_BASE}/users/me`, {
+    method: 'DELETE',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data?.message as string) ?? '회원 탈퇴 실패');
+  }
+}

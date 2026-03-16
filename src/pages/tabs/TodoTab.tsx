@@ -64,16 +64,16 @@ function isRoutineActiveOnDate(routine: RoutineDto, dateStr: string): boolean {
 }
 
 function makeGradient(colors: string[]): string {
-  if (colors.length === 1) return colors[0];
-  const step = 100 / colors.length;
-  const stops = colors.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`).join(', ');
+  // if (colors.length === 1) return colors[0];
+  // const step = 100 / colors.length;
+  // const stops = colors.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`).join(', ');
 
   // 투명도
-  // const fade = (c: string) => `color-mix(in srgb, ${c} 70%, transparent)`;
-  // const faded = colors.map(fade);
-  // if (faded.length === 1) return faded[0];
-  // const step = 100 / faded.length;
-  // const stops = faded.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`).join(', ');
+  const fade = (c: string) => `color-mix(in srgb, ${c} 80%, transparent)`;
+  const faded = colors.map(fade);
+  if (faded.length === 1) return faded[0];
+  const step = 100 / faded.length;
+  const stops = faded.map((c, i) => `${c} ${i * step}% ${(i + 1) * step}%`).join(', ');
   return `conic-gradient(${stops})`;
 }
 

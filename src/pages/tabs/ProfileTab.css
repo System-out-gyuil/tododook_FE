@@ -234,7 +234,7 @@
 
 .pf-cal-day {
   font-size: 10px;
-  color: var(--color-text-muted);
+  color: var(--color-text-light);
   line-height: 1;
 }
 
@@ -249,9 +249,9 @@
 }
 
 .pf-cal-check {
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255);
   margin-top: 1px;
 }
 
@@ -526,6 +526,72 @@
 }
 .pf-modal-save:disabled,
 .pf-modal-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── 유저 액션 (로그아웃 + 탈퇴) ── */
+.pf-user-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pf-delete-account-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+.pf-delete-account-btn:hover {
+  color: var(--color-danger);
+}
+
+/* ── 회원 탈퇴 모달 ── */
+.pf-delete-modal {
+  text-align: center;
+}
+
+.pf-delete-icon {
+  font-size: 36px;
+  margin-bottom: 4px;
+}
+
+.pf-delete-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.pf-delete-desc strong {
+  color: var(--color-danger);
+}
+
+.pf-delete-confirm-btn {
+  flex: 1;
+  padding: 11px 0;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--color-danger);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.pf-delete-confirm-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+.pf-delete-confirm-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

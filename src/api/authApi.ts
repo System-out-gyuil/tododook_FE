@@ -6,6 +6,7 @@ export interface AuthResponse {
   userId: number;
   name: string;
   email: string;
+  newUser?: boolean;
 }
 
 export interface SignupRequest {
