@@ -113,7 +113,7 @@ button {
 /* ── 라이트 테마 ── */
 [data-theme="light"] {
   --color-primary:        rgba(0, 0, 0, 0.87);
-  --color-primary-dim:    rgba(0, 0, 0, 0.15);
+  --color-primary-dim:    rgba(0, 0, 0, 0.05);
   --color-primary-hover:  rgba(74, 158, 255, 0.2);
   --color-accent:         #7b5cf6;
 

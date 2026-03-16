@@ -33,15 +33,15 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;
-  color: #e8e8e8;
+  color: var(--color-text);
 }
 
 .hamburger-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-hover);
 }
 
 .hamburger-line {
@@ -72,7 +72,7 @@
   padding: 0.75rem 1rem;
   text-align: left;
   font-size: 0.95rem;
-  color: #e8e8e8;
+  color: var(--color-text);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -80,7 +80,7 @@
 }
 
 .hamburger-menu button:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-hover);
 }
 
 .main-content {
@@ -146,11 +146,11 @@
 }
 
 [data-theme="light"] .settings-btn {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.1);
+  background: var(--color-bg-surface);
+  border-color: var(--color-border);
 }
 [data-theme="light"] .settings-btn:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--color-bg-hover);
 }
 
 /* ── 설정 바텀시트 ── */
