@@ -57,7 +57,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.15rem;
-    background: none;
+    background: var(--color-bg);
     border: none;
     cursor: pointer;
     padding: 0.2rem 0.5rem;
@@ -110,14 +110,14 @@
     align-items: center;
     gap: 0.55rem;
     padding: 0.45rem 0.85rem;
-    border-bottom: 1px solid #252525;
+    border-bottom: 1px solid var(--color-border-timeline);
     flex-shrink: 0;
   }
   
   .tl-nav-btn {
     background: none;
     border: 1px solid #333;
-    color: #bbb;
+    color: var(--color-text-muted);
     border-radius: 7px;
     padding: 0.22rem 0.7rem;
     cursor: pointer;
@@ -128,7 +128,7 @@
   
   .tl-nav-btn:hover {
     background: #2a2a2a;
-    color: #fff;
+    color: #fff;  
   }
   
   .tl-date-label {
@@ -136,7 +136,7 @@
     text-align: center;
     font-size: 0.87rem;
     font-weight: bold;
-    color: #ddd;
+    color: var(--color-text);
   }
   
   .tl-today-btn {
@@ -194,7 +194,7 @@
     padding: 0.16rem 0.5rem;
     border-radius: 20px;
     border: 1px solid;
-    color: #ccc;
+    color: var(--color-text-muted);
     cursor: default;
   }
   
@@ -238,7 +238,7 @@
   .tl-gutter {
     flex-shrink: 0;
     width: 52px;
-    border-right: 1px solid #252525;
+    border-right: 1px solid var(--color-border-timeline);
     position: sticky;
     left: 0;
     background: var(--color-bg, #1a1a1a);
@@ -251,9 +251,9 @@
     justify-content: flex-end;
     padding: 3px 7px 0 0;
     font-size: 0.6rem;
-    color: #484848;
+    color: var(--color-text-muted);
     box-sizing: border-box;
-    border-top: 1px solid #222;
+    border-top: 1px solid var(--color-border-timeline);
     user-select: none;
   }
   
@@ -267,12 +267,12 @@
     position: absolute;
     left: 0;
     right: 0;
-    border-top: 1px solid #222;
+    border-top: 1px solid var(--color-border-timeline);
     pointer-events: none;
   }
   
   .tl-hour-line.major {
-    border-top-color: #2c2c2c;
+    border-top-color: var(--color-border-timeline-major);
   }
   
   .tl-half-line {
@@ -313,7 +313,7 @@
     display: block;
     font-size: 0.72rem;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -327,7 +327,7 @@
   .tl-todo-time {
     display: block;
     font-size: 0.61rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-muted);
     line-height: 1.25;
   }
   

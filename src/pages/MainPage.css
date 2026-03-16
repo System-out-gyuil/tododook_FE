@@ -109,7 +109,7 @@
   flex: 1;
   padding: 0.75rem 0.5rem;
   font-size: 0.95rem;
-  color: #a0a0a0;
+  color: var(--color-text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -117,10 +117,145 @@
 }
 
 .tab-btn:hover {
-  color: #e8e8e8;
+  color: var(--color-text);
 }
 
 .tab-btn.active {
   color: #4a9eff;
   font-weight: 600;
+}
+
+/* ── 설정 버튼 ── */
+.settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-text);
+  transition: background 0.15s;
+}
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: transparent;
+}
+
+[data-theme="light"] .settings-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+[data-theme="light"] .settings-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ── 설정 바텀시트 ── */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.settings-sheet {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: var(--todo-tab-width);
+  padding: 12px 20px 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: settings-slide-up 0.25s ease;
+}
+
+@keyframes settings-slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.settings-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  align-self: center;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* 섹션 */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-section-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* 테마 버튼 행 */
+.settings-theme-row {
+  display: flex;
+  gap: 10px;
+}
+
+.settings-theme-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  position: relative;
+}
+.settings-theme-btn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-text-muted);
+}
+.settings-theme-btn.active {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+  background: rgba(123, 92, 246, 0.08);
+}
+
+.settings-theme-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.settings-theme-check {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--color-accent);
+  font-weight: 700;
 }

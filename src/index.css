@@ -22,11 +22,18 @@
   --color-bg-surface:     rgba(255, 255, 255, 0.05);
   --color-bg-elevated:    #1e1e2e;
   --color-bg-hover:       rgba(255, 255, 255, 0.07);
-
+  --color-bg-category:    rgba(0, 0, 0, 0.15);
+  --color-bg-profile:     rgba(255, 255, 255, 0.03);
+  --color-bg-calendar-day-btn:    rgba(255, 255, 255, 0.04);
+  
   /* 테두리 */
   --color-border:         rgba(255, 255, 255, 0.08);
   --color-border-focus:   rgb(255, 255, 255);
   --color-border-today:   #00fff2;
+  --color-border-calendar-day-btn:    rgba(255, 255, 255, 0.06);
+
+  --color-border-timeline: #252525;
+  --color-border-timeline-major: #2c2c2c;
 
   /* 텍스트 */
   --color-text:           rgba(255, 255, 255, 0.87);
@@ -103,17 +110,49 @@ button {
   transition: border-color 0.25s;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* ── 라이트 테마 ── */
+[data-theme="light"] {
+  --color-primary:        rgba(0, 0, 0, 0.87);
+  --color-primary-dim:    rgba(0, 0, 0, 0.15);
+  --color-primary-hover:  rgba(74, 158, 255, 0.2);
+  --color-accent:         #7b5cf6;
+
+  --color-bg:             #ffffff;
+  --color-bg-surface:     rgba(210, 210, 210, 0.04);
+  --color-bg-elevated:    #ffffff;
+  --color-bg-hover:       rgba(0, 0, 0, 0.06);
+  --color-bg-category:    rgba(212, 212, 212, 0.15);
+  --color-bg-profile:     rgba(0, 0, 0, 0.03);
+  --color-bg-calendar-day-btn:    rgba(0, 0, 0, 0.04);
+  
+  --color-border:         rgb(210, 210, 210);
+  --color-border-focus:   rgba(0, 0, 0, 0.8);
+  --color-border-today:   #00b4ab;
+  --color-border-calendar-day-btn:    rgba(0, 0, 0, 0.06);
+
+  --color-border-timeline: #a7a7a7;
+  --color-border-timeline-major: #555555;
+
+  --color-text:           rgba(60, 60, 60, 0.87);
+  --color-text-secondary: #555555;
+  --color-text-muted:     #5d5d5dee;
+  --color-text-done:      #bbbbbb;
+
+  --color-danger:         #e53e3e;
+  --color-danger-dim:     rgba(229, 62, 62, 0.1);
+
+  color-scheme: light;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #ffffff;
+}
+
+/* [data-theme="light"] button {
+  background-color: #ffffff;
+  color: rgba(0, 0, 0, 0.87);
+} */
+
+[data-theme="light"] a:hover {
+  color: #747bff;
 }
 
 input {

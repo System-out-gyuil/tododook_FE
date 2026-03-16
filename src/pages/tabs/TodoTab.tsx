@@ -18,6 +18,7 @@ import {
   type RoutineDto,
   type RepeatConfig,
 } from '../../api/todoApi';
+import { getMyProfile, type UserProfileDto } from '../../api/userApi';
 import './TodoTab.css';
 
 
@@ -138,8 +139,13 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
     try { return JSON.parse(localStorage.getItem('user') ?? '{}'); } catch { return {}; }
   })();
   const userName: string = storedUser.name ?? '사용자';
-  const userEmail: string = storedUser.email ?? '';
   const avatarLetter = userName.charAt(0).toUpperCase();
+
+  const [profile, setProfile] = useState<UserProfileDto | null>(null);
+
+  useEffect(() => {
+    getMyProfile().then(setProfile).catch(() => {});
+  }, []);
 
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -771,10 +777,16 @@ export default function TodoTab({ refreshKey = 0 }: TodoTabProps) {
 
           <section className="user-profile-section">
             <div className="user-profile-container">
-              <div className="user-avatar">{avatarLetter}</div>
+              {profile?.profileImage ? (
+                <img src={profile.profileImage} alt="profile" className="user-avatar user-avatar-img" />
+              ) : (
+                <div className="user-avatar">{avatarLetter}</div>
+              )}
               <div className="user-info">
                 <span className="user-name">{userName}</span>
-                {userEmail && <span className="user-email">유저 상메</span>}
+                {profile?.statusMessage && (
+                  <span className="user-email">{profile.statusMessage}</span>
+                )}
               </div>
             </div>
           </section>
