@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { type AuthResponse } from '../api/authApi';
 import './Auth.css';
 
-const API_BASE = 'http://localhost:8060/api';
+const API_BASE = 'http://43.200.125.100:8060/api';
 
 export default function KakaoCallback() {
   const navigate = useNavigate();

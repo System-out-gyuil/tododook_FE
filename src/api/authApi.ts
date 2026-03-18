@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8060/api/v1';
+const API_BASE = 'http://43.200.125.100:8060/api/v1';
 
 export interface AuthResponse {
   accessToken: string;
