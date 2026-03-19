@@ -1,4 +1,4 @@
-const API_BASE = 'http://43.200.125.100:8060/api/v1';
+import { API_V1 as API_BASE } from './config';
 
 export interface AuthResponse {
   accessToken: string;
@@ -21,6 +21,7 @@ export interface LoginRequest {
 }
 
 export async function signup(body: SignupRequest): Promise<AuthResponse> {
+  console.log('API_BASE', API_BASE);
   const res = await fetch(`${API_BASE}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -35,6 +36,7 @@ export async function signup(body: SignupRequest): Promise<AuthResponse> {
 }
 
 export async function login(body: LoginRequest): Promise<AuthResponse> {
+  console.log('API_BASE', API_BASE);
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

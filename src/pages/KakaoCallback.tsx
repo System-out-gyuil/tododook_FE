@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type AuthResponse } from '../api/authApi';
+import { API_OAUTH } from '../api/config';
 import './Auth.css';
-
-const API_BASE = 'http://43.200.125.100:8060/api';
 
 export default function KakaoCallback() {
   const navigate = useNavigate();
@@ -33,7 +32,7 @@ export default function KakaoCallback() {
   const processKakaoLogin = async (code: string) => {
     try {
       const res = await fetch(
-        `${API_BASE}/oauth/kakao/callback?code=${encodeURIComponent(code)}`
+        `${API_OAUTH}/kakao/callback?code=${encodeURIComponent(code)}`
       );
 
       const data: AuthResponse = await res.json();

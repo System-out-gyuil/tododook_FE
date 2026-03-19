@@ -19,7 +19,7 @@ import {
   type RepeatConfig,
 } from '../../api/todoApi';
 import { getMyProfile, type UserProfileDto } from '../../api/userApi';
-import './TodoTab.css';
+import './Todotab.css';
 
 
 function getDaysInMonth(year: number, month: number): number {

@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_V1 as API_BASE } from '../api/config';
 import './Auth.css';
 import './KakaoProfileSetup.css';
-
-const API_BASE = 'http://43.200.125.100:8060/api/v1';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('accessToken');

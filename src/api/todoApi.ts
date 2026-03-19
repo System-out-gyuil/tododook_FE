@@ -1,4 +1,4 @@
-const API_BASE = 'http://43.200.125.100:8060/api/v1';
+import { API_V1 as API_BASE } from './config';
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('accessToken');
@@ -42,6 +42,7 @@ export interface TodoDto {
 }
 
 export async function getCategories(): Promise<TodoCategoryDto[]> {
+  console.log('API_BASE', API_BASE);
   const res = await fetch(`${API_BASE}/categories`, {
     headers: getAuthHeaders(),
     credentials: 'include',
