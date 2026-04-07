@@ -189,6 +189,15 @@
   align-self: center;
   margin-bottom: 4px;
   flex-shrink: 0;
+  cursor: grab;
+  padding: 12px 40px;
+  box-sizing: content-box;
+  background-clip: content-box;
+  touch-action: none;
+}
+
+.settings-handle:active {
+  cursor: grabbing;
 }
 
 .settings-title {

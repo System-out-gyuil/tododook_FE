@@ -26,6 +26,31 @@ function SettingsSheet({ theme, onThemeChange, onClose, onDeleteAccount }: Setti
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [sheetTranslateY, setSheetTranslateY] = useState(0);
+  const sheetDragRef = useRef<{ startY: number } | null>(null);
+
+  const handleSheetHandlePointerDown = (e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    sheetDragRef.current = { startY: e.clientY };
+  };
+
+  const handleSheetHandlePointerMove = (e: React.PointerEvent) => {
+    if (!sheetDragRef.current) return;
+    const delta = e.clientY - sheetDragRef.current.startY;
+    if (delta > 0) setSheetTranslateY(delta);
+  };
+
+  const handleSheetHandlePointerUp = (e: React.PointerEvent) => {
+    if (!sheetDragRef.current) return;
+    const delta = e.clientY - sheetDragRef.current.startY;
+    sheetDragRef.current = null;
+    if (delta > 80) {
+      onClose();
+      setSheetTranslateY(0);
+    } else {
+      setSheetTranslateY(0);
+    }
+  };
 
   const handleDeleteConfirm = async () => {
     setDeleting(true);
@@ -40,8 +65,20 @@ function SettingsSheet({ theme, onThemeChange, onClose, onDeleteAccount }: Setti
 
   return (
     <div className="settings-overlay" onClick={onClose}>
-      <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="settings-handle" />
+      <div
+        className="settings-sheet"
+        style={{
+          transform: `translateY(${sheetTranslateY}px)`,
+          transition: sheetDragRef.current ? 'none' : 'transform 0.2s ease',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="settings-handle"
+          onPointerDown={handleSheetHandlePointerDown}
+          onPointerMove={handleSheetHandlePointerMove}
+          onPointerUp={handleSheetHandlePointerUp}
+        />
         <p className="settings-title">설정</p>
 
         {/* 테마 섹션 */}
