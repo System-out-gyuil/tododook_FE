@@ -42,7 +42,6 @@ export interface TodoDto {
 }
 
 export async function getCategories(): Promise<TodoCategoryDto[]> {
-  console.log('API_BASE', API_BASE);
   const res = await fetch(`${API_BASE}/categories`, {
     headers: getAuthHeaders(),
     credentials: 'include',

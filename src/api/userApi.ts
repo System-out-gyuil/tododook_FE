@@ -16,7 +16,6 @@ export interface UserProfileDto {
 }
 
 export async function getMyProfile(): Promise<UserProfileDto> {
-  console.log('API_BASE', API_BASE);
   const res = await fetch(`${API_BASE}/users/me`, {
     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     credentials: 'include',
